@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Account - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --sidebar-bg: #ffffff;
+            --content-bg: #ffffff;
+            --text-color: #333;
+            --text-muted: #666;
+            --border-color: #eee;
+            --primary-color: #6a11cb;
+            --hover-bg: #f0f2f5;
+        }
+        body.dark-mode {
+            --bg-color: #121212;
+            --sidebar-bg: #1e1e1e;
+            --content-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --text-muted: #a0a0a0;
+            --border-color: #333;
+            --hover-bg: #333;
+        }
+        /* Reusing styles from home.html for consistency */
+        body, html { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; background-color: var(--bg-color); color: var(--text-color); }
+        .dashboard-container { display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background: var(--sidebar-bg); box-shadow: 2px 0 5px rgba(0,0,0,0.1); color: var(--text-color); display: flex; flex-direction: column; padding: 20px; border-right: 1px solid var(--border-color); }
+        .sidebar-header { font-size: 24px; font-weight: 600; padding-bottom: 20px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); color: #6a11cb; }
+        .sidebar-nav { list-style: none; padding: 0; margin: 0; }
+        .sidebar-nav li a { display: flex; align-items: center; padding: 15px 10px; color: var(--text-muted); text-decoration: none; border-radius: 8px; margin-bottom: 5px; transition: background-color 0.3s, color 0.3s; }
+        .sidebar-nav li a i { margin-right: 15px; width: 20px; text-align: center; }
+        .sidebar-nav li a:hover, .sidebar-nav li a.active { background-color: #6a11cb; color: #fff; }
+        .main-content { flex-grow: 1; padding: 30px; }
+        .main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .main-header h1 { margin: 0; font-size: 28px; font-weight: 600; }
+        .content-box { background: var(--content-bg); padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        .content-box h2 { margin-top: 0; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+        .info-group, .input-group { margin-bottom: 20px; }
+        .info-group label, .input-group label { display: block; margin-bottom: 8px; font-weight: 500; color: var(--text-muted); }
+        .info-group p { margin: 0; font-size: 16px; color: var(--text-color); }
+        .input-group input { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-family: 'Poppins', sans-serif; font-size: 16px; }
+        .action-button { width: 100%; padding: 15px; border: none; border-radius: 8px; background: #007bff; color: white; font-size: 18px; font-weight: 600; cursor: pointer; transition: background-color 0.3s; }
+        .action-button:hover { background-color: #0069d9; }
+        .history-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .history-table th, .history-table td { text-align: left; padding: 12px 15px; border-bottom: 1px solid var(--border-color); }
+        .history-table th { background-color: var(--hover-bg); font-weight: 600; }
+        .status-completed { color: #28a745; font-weight: 500; }
+
+        /* New Pagination Styles */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .pagination button {
+            background-color: #6a11cb; color: white; border: none; padding: 8px 12px; margin: 0 5px; border-radius: 4px; cursor: pointer; transition: background-color 0.3s;
+        }
+        .pagination button:hover { background-color: #5a0fb1; }
+        .pagination button:disabled { background-color: #ccc; cursor: not-allowed; }
+        .pagination span { margin: 0 10px; font-weight: 500; }
+        .delete-button { background-color: #dc3545; }
+        .delete-button:hover { background-color: #c82333; }
+        .danger-zone p { color: var(--text-muted); font-size: 14px; }
+
+        .theme-toggle-button {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            transition: all 0.3s;
+        }
+        .theme-toggle-button:hover { background-color: var(--hover-bg); color: var(--primary-color); border-color: var(--primary-color); }
+    </style>
+</head>
+<body>
+    <script>
+        // Page protection script
+        let loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
+        if (!loggedInUser) {
+            window.location.href = 'login.html';
+        }
+    </script>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">MyDashboard</div>
+            <ul class="sidebar-nav">
+                <li><a href="home.html"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="referrals.html"><i class="fas fa-users"></i> Referrals</a></li>
+                <li><a href="withraw.html"><i class="fas fa-hand-holding-usd"></i> Withdraw</a></li>
+                <li><a href="#" class="active"><i class="fas fa-user-circle"></i> My Account</a></li>
+                <!-- Watch Ads & Earn Money Box -->
+                <li style="margin: 12px 0;">
+                    <div style="background:#ffc107;border-radius:8px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08);color:#333;display:flex;align-items:center;justify-content:center;gap:10px;">
+                        <i class="fas fa-tv" style="font-size:22px;"></i>
+                        <div>
+                            <div style="font-weight:600;font-size:15px;">Watch Ads & Earn Money</div>
+                            <div style="font-size:12px;color:#888;margin-bottom:2px;">🌟 Special Feature!</div>
+                            <div style="font-size:13px;">Earn <span style='color:#28a745;font-weight:600;'>$0.30</span> per ad. Watch up to 10 ads daily and earn up to <span style='color:#28a745;font-weight:600;'>$3.00</span> every 24 hours!</div>
+                            <a href="adds.html" style="display:inline-block;margin-top:6px;padding:5px 12px;background:#fff;color:#ffc107;border-radius:5px;font-size:13px;text-decoration:none;font-weight:500;">Start Earning</a>
+                        </div>
+                    </div>
+                </li>
+                <!-- Exchange Services Box -->
+                <li style="margin: 12px 0;">
+                    <div style="background:#6a11cb;border-radius:8px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08);color:#fff;display:flex;align-items:center;justify-content:center;gap:10px;">
+                        <i class="fas fa-exchange-alt" style="font-size:22px;"></i>
+                        <div>
+                            <div style="font-weight:600;font-size:15px;">Exchange Services</div>
+                            <div style="font-size:12px;color:#eee;margin-bottom:2px;">🌟 Special Feature!</div>
+                            <div style="font-size:13px;">Swap your rewards easily!</div>
+                            <a href="Exsange.html" style="display:inline-block;margin-top:6px;padding:5px 12px;background:#fff;color:#6a11cb;border-radius:5px;font-size:13px;text-decoration:none;font-weight:500;">Go to Exchange</a>
+                        </div>
+                    </div>
+                </li>
+                <li><a href="#" id="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </aside>
+        <main class="main-content">
+            <header class="main-header">
+                <h1>My Account</h1>
+                <button id="theme-toggle-btn" class="theme-toggle-button"><i class="fas fa-moon"></i><i class="fas fa-sun" style="display: none;"></i></button>
+            </header>
+            <div class="content-box">
+                <h2>Account Details</h2>
+                <div class="info-group">
+                    <label>Full Name</label>
+                    <p id="user-fullname">Guest</p>
+                </div>
+                <div class="info-group">
+                    <label>Email Address</label>
+                    <p id="user-email">guest@example.com</p>
+                </div>
+            </div>
+            <div class="content-box">
+                <h2>Change Password</h2>
+                <form id="change-password-form">
+                    <div class="input-group">
+                        <label for="current-password">Current Password</label>
+                        <input type="password" id="current-password" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="new-password">New Password</label>
+                        <input type="password" id="new-password" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="confirm-new-password">Confirm New Password</label>
+                        <input type="password" id="confirm-new-password" required>
+                    </div>
+                    <button type="submit" class="action-button">Update Password</button>
+                </form>
+            </div>
+            <div class="content-box">
+                <h2>Transaction History</h2>
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Method</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-tbody"></tbody>
+                </table>
+                <div class="pagination" id="history-pagination"></div>
+            </div>
+            <div class="content-box">
+                <h2>Activity Log</h2>
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activity-tbody">
+                        <!-- Activity will be populated here -->
+                    </tbody>
+                </table>
+                <div class="pagination" id="activity-pagination"></div>
+            </div>
+            <div class="content-box danger-zone">
+                <h2>Danger Zone</h2>
+                <p>Once you delete your account, there is no going back. Please be certain.</p>
+                <form id="delete-account-form">
+                    <div class="input-group">
+                        <label for="delete-confirm-password">Enter Your Password to Confirm</label>
+                        <input type="password" id="delete-confirm-password" required>
+                    </div>
+                    <button type="submit" class="action-button delete-button">Delete My Account</button>
+                </form>
+            </div>
+        </main>
+    </div>
+    <script>
+        // --- Helper functions for user data ---
+        function getAllUsers() { return JSON.parse(atob(localStorage.getItem('users_encrypted') || btoa('[]'))); }
+        function saveAllUsers(users) { localStorage.setItem('users_encrypted', btoa(JSON.stringify(users))); }
+        function saveCurrentUserProgress() {
+            let loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
+            if (!loggedInUser || loggedInUser.email === 'guest@example.com') return;
+            let allUsers = getAllUsers();
+            const userIndex = allUsers.findIndex(u => u.email === loggedInUser.email);
+            if (userIndex !== -1) {
+                allUsers[userIndex] = loggedInUser;
+                saveAllUsers(allUsers);
+            }
+        }
+
+        // --- Page Initialization ---
+        document.addEventListener('DOMContentLoaded', function() {
+            let user = JSON.parse(sessionStorage.getItem('loggedInUser'));
+            if (user) {
+                document.getElementById('user-fullname').textContent = user.fullname;
+                document.getElementById('user-email').textContent = user.email;
+            }
+
+            // --- Theme Switcher Logic ---
+            const themeToggleButton = document.getElementById('theme-toggle-btn');
+            const moonIcon = themeToggleButton.querySelector('.fa-moon');
+            const sunIcon = themeToggleButton.querySelector('.fa-sun');
+
+            function setTheme(isDark) {
+                if (isDark) {
+                    document.body.classList.add('dark-mode');
+                    moonIcon.style.display = 'none';
+                    sunIcon.style.display = 'inline-block';
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                    sunIcon.style.display = 'none';
+                    moonIcon.style.display = 'inline-block';
+                    localStorage.setItem('theme', 'light');
+                }
+            }
+
+            themeToggleButton.addEventListener('click', () => {
+                const isDarkMode = document.body.classList.contains('dark-mode');
+                setTheme(!isDarkMode);
+            });
+
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                setTheme(savedTheme === 'dark');
+            }
+
+            // --- Reusable Pagination Logic ---
+            function setupPagination(items, tableBody, paginationContainer, renderRow, itemsPerPage = 5) {
+                const totalPages = Math.ceil(items.length / itemsPerPage);
+                let currentPage = 1;
+
+                function displayPage(page) {
+                    tableBody.innerHTML = '';
+                    const start = (page - 1) * itemsPerPage;
+                    const end = start + itemsPerPage;
+                    const paginatedItems = items.slice(start, end);
+
+                    if (paginatedItems.length > 0) {
+                        paginatedItems.forEach(item => tableBody.appendChild(renderRow(item)));
+                    } else {
+                        tableBody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 20px;">No records found.</td></tr>`;
+                    }
+
+                    paginationContainer.innerHTML = `
+                        <button id="prev-btn" ${page === 1 ? 'disabled' : ''}>Prev</button>
+                        <span>Page ${page} of ${totalPages}</span>
+                        <button id="next-btn" ${page === totalPages ? 'disabled' : ''}>Next</button>
+                    `;
+
+                    document.getElementById('prev-btn').addEventListener('click', () => displayPage(currentPage - 1));
+                    document.getElementById('next-btn').addEventListener('click', () => displayPage(currentPage + 1));
+                    currentPage = page;
+                }
+
+                if (totalPages > 0) {
+                    displayPage(1);
+                } else {
+                    tableBody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 20px;">No records found.</td></tr>`;
+                    paginationContainer.innerHTML = '';
+                }
+            }
+
+            // --- Display Logs and History ---
+            const userActivity = (user.activityLog || []).slice().reverse();
+            const userTransactions = (user.transactions || []).slice().reverse();
+
+            setupPagination(userActivity, document.getElementById('activity-tbody'), document.getElementById('activity-pagination'), (log) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${log.date}</td><td>${log.action}</td>`;
+                return row;
+            });
+
+            setupPagination(userTransactions, document.getElementById('history-tbody'), document.getElementById('history-pagination'), (tx) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${tx.date}</td>
+                    <td>$${tx.amount.toFixed(2)}</td>
+                    <td>${tx.method.charAt(0).toUpperCase() + tx.method.slice(1)}</td>
+                    <td><span class="status-completed">${tx.status}</span></td>
+                `;
+                return row;
+            });
+
+            // --- Logout Logic ---
+            document.getElementById('logout-link').addEventListener('click', function(event) {
+                event.preventDefault();
+                saveCurrentUserProgress();
+                sessionStorage.removeItem('loggedInUser');
+                localStorage.removeItem('rememberedUser');
+                window.location.href = 'login.html';
+            });
+
+            // --- Change Password Logic ---
+            document.getElementById('change-password-form').addEventListener('submit', function(event) {
+                event.preventDefault();
+                let user = JSON.parse(sessionStorage.getItem('loggedInUser'));
+                if (!user || user.email === 'guest@example.com') {
+                    alert("Cannot change password for a guest account.");
+                    return;
+                }
+
+                const currentPassword = document.getElementById('current-password').value;
+                const newPassword = document.getElementById('new-password').value;
+                const confirmNewPassword = document.getElementById('confirm-new-password').value;
+
+                if (currentPassword !== user.password) {
+                    alert("Incorrect current password.");
+                    return;
+                }
+                if (newPassword !== confirmNewPassword) {
+                    alert("New passwords do not match.");
+                    return;
+                }
+                if (newPassword.length < 6) {
+                    alert("New password must be at least 6 characters long.");
+                    return;
+                }
+
+                // Update password in session
+                user.password = newPassword;
+
+                if (!user.activityLog) user.activityLog = [];
+                user.activityLog.push({ date: new Date().toLocaleString(), action: 'Password changed successfully.' });
+
+                sessionStorage.setItem('loggedInUser', JSON.stringify(user));
+
+                // Persist change to main storage
+                saveCurrentUserProgress();
+
+                alert("Password updated successfully!");
+                document.getElementById('change-password-form').reset();
+                location.reload(); // Reload to show updated log
+            });
+
+            // --- Delete Account Logic ---
+            document.getElementById('delete-account-form').addEventListener('submit', function(event) {
+                event.preventDefault();
+                let user = JSON.parse(sessionStorage.getItem('loggedInUser'));
+                const passwordConfirmation = document.getElementById('delete-confirm-password').value;
+
+                if (passwordConfirmation !== user.password) {
+                    alert("Incorrect password. Account deletion failed.");
+                    return;
+                }
+
+                if (confirm("Are you absolutely sure you want to delete your account? This action cannot be undone.")) {
+                    let allUsers = getAllUsers();
+                    // Filter out the user who is deleting their account
+                    const updatedUsers = allUsers.filter(u => u.email !== user.email);
+                    saveAllUsers(updatedUsers);
+
+                    // Log out and redirect
+                    sessionStorage.removeItem('loggedInUser');
+                    alert("Your account has been successfully deleted.");
+                    window.location.href = 'login.html';
+                }
+            });
+
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deposit Money</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+             background-image: linear-gradient(to right, rgba(106, 17, 203, 0.5), rgba(37, 117, 252, 0.5)), url('https://images.unsplash.com/photo-1497294815431-9365093b7331?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80');
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 400px;
+            margin: 60px auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            padding: 40px 30px;
+            text-align: center;
+        }
+        h1 {
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 18px;
+            color: #6a11cb;
+        }
+        .deposit-box {
+            background: #6a11cb;
+            border-radius: 8px;
+            padding: 24px 16px;
+            margin: 30px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+        .deposit-box i {
+            font-size: 38px;
+            color: #fff;
+        }
+        .deposit-box .desc {
+            font-size: 16px;
+            font-weight: 500;
+        }
+        .deposit-form {
+            margin-top: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .deposit-form input {
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            font-size: 15px;
+        }
+        .deposit-form button {
+            padding: 10px;
+            background: #ffc107;
+            color: #333;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .deposit-form button:hover {
+            background: #ffdb58;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 30px;
+            color: #6a11cb;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 15px;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Deposit Money</h1>
+        <div class="deposit-box">
+            <i class="fab fa-paypal" style="font-size:38px;color:#fff;"></i>
+            <div class="desc">Send money to our PayPal account below:</div>
+            <div style="margin:10px 0;font-size:15px;color:#fff;background:#2575fc;padding:8px 16px;border-radius:6px;display:inline-block;">
+                <i class="fas fa-envelope" style="margin-right:6px;"></i>
+                <span id="paypal-email" style="cursor:pointer;text-decoration:underline;">ghizlanaourir1@gmail.com</span>
+                <span id="copy-success" style="display:none;margin-left:8px;font-size:13px;color:#ffc107;">Copied!</span>
+            </div>
+            <div style="margin:14px 0 8px 0;font-size:14px;color:#fff;">After sending, contact us on WhatsApp to confirm your deposit:</div>
+            <div style="margin:14px 0 8px 0;font-size:15px;color:#fff;background:#25d366;padding:8px 16px;border-radius:6px;display:inline-block;">
+                <a href="https://wa.me/212652518485" target="_blank" style="color:#fff;text-decoration:none;">
+                    <i class="fab fa-whatsapp" style="font-size:18px;margin-right:6px;"></i> <span id="whatsapp-number">+2126••••••</span>
+                </a>
+            </div>
+            <div style="font-size:13px;color:#fff;">We'll add the money to your account after confirmation.</div>
+        </div>
+        <a href="home.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+    </div>
+    <script>
+    // Copy PayPal email to clipboard on click
+    document.getElementById('paypal-email').addEventListener('click', function() {
+        const email = 'ghizlanaourir1@gmail.com';
+        navigator.clipboard.writeText(email).then(function() {
+            document.getElementById('copy-success').style.display = 'inline';
+            setTimeout(function() {
+                document.getElementById('copy-success').style.display = 'none';
+            }, 1500);
+        });
+    });
+
+    // Blur WhatsApp number except first 4 digits
+    const fullNumber = '+212652518485';
+    const visible = fullNumber.slice(0, 5); // +2126
+    const blurred = '••••••';
+    document.getElementById('whatsapp-number').textContent = visible + blurred;
+    </script>
+</body>
+</html>

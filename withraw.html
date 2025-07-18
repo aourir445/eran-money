@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Withdraw - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --sidebar-bg: #ffffff;
+            --content-bg: #ffffff;
+            --text-color: #333;
+            --text-muted: #666;
+            --border-color: #eee;
+            --primary-color: #6a11cb;
+            --hover-bg: #f0f2f5;
+        }
+        body.dark-mode {
+            --bg-color: #121212;
+            --sidebar-bg: #1e1e1e;
+            --content-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --text-muted: #a0a0a0;
+            --border-color: #333;
+            --hover-bg: #333;
+        }
+        /* Reusing styles from home.html for consistency */
+        body, html {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+        .dashboard-container { display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background: var(--sidebar-bg); box-shadow: 2px 0 5px rgba(0,0,0,0.1); color: var(--text-color); display: flex; flex-direction: column; padding: 20px; border-right: 1px solid var(--border-color); }
+        .sidebar-header { font-size: 24px; font-weight: 600; padding-bottom: 20px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); color: #6a11cb; }
+        .sidebar-nav { list-style: none; padding: 0; margin: 0; }
+        .sidebar-nav li a { display: flex; align-items: center; padding: 15px 10px; color: var(--text-muted); text-decoration: none; border-radius: 8px; margin-bottom: 5px; transition: background-color 0.3s, color 0.3s; }
+        .sidebar-nav li a i { margin-right: 15px; width: 20px; text-align: center; }
+        .sidebar-nav li a:hover, .sidebar-nav li a.active { background-color: #6a11cb; color: #fff; }
+        .main-content { flex-grow: 1; padding: 30px; }
+        .main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .main-header h1 { margin: 0; font-size: 28px; font-weight: 600; }
+        .content-box { background: var(--content-bg); padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .balance-display { text-align: center; margin-bottom: 30px; }
+        .balance-display h3 { color: var(--text-muted); margin: 0 0 10px; }
+        .balance-display p { font-size: 48px; font-weight: 700; color: #28a745; margin: 0; }
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; margin-bottom: 8px; font-weight: 500; color: var(--text-color); }
+        .input-group input { width: 100%; padding: 12px 15px; border: 1px solid var(--border-color); border-radius: 8px; box-sizing: border-box; font-family: 'Poppins', sans-serif; font-size: 16px; background-color: var(--bg-color); color: var(--text-color); }
+        .withdraw-button { width: 100%; padding: 15px; border: none; border-radius: 8px; background: #007bff; color: white; font-size: 18px; font-weight: 600; cursor: pointer; transition: background-color 0.3s; }
+        .withdraw-button:hover { background-color: #0069d9; }
+
+        /* New Styles for Payment Method Selection */
+        .payment-methods {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .payment-method input[type="radio"] {
+            display: none; /* Hide the actual radio button */
+        }
+        .payment-method label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 60px;
+        }
+        .payment-method label i { font-size: 28px; margin-bottom: 10px; }
+        .payment-method label span { font-weight: 500; }
+        .payment-method input[type="radio"]:checked + label {
+            border-color: var(--primary-color);
+            background-color: var(--hover-bg);
+            color: var(--primary-color);
+        }
+        .payment-fields { display: none; } /* Hidden by default */
+        .payment-fields.active { display: block; } /* Shown when active */
+
+        .theme-toggle-button {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            transition: all 0.3s;
+        }
+        .theme-toggle-button:hover { background-color: var(--hover-bg); color: var(--primary-color); border-color: var(--primary-color); }
+
+        /* --- Special Feature: Arrival Time Estimation --- */
+        .estimation-box {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background-color: var(--hover-bg);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+        }
+        .estimation-box i {
+            font-size: 24px;
+            color: var(--primary-color);
+        }
+        .estimation-box strong {
+            color: var(--text-color);
+        }
+        .estimation-box span {
+            color: var(--text-muted);
+        }
+        /* --- Special Feature: Confirmation Modal --- */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.show { display: flex; }
+        .modal-content {
+            background-color: var(--content-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            width: 90%;
+            max-width: 450px;
+            position: relative;
+        }
+        .close-button {
+            color: var(--text-muted);
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .confirmation-details p { margin: 10px 0; font-size: 16px; }
+        .confirmation-details hr { border: none; border-top: 1px solid var(--border-color); margin: 15px 0; }
+        .modal-actions { display: flex; gap: 15px; margin-top: 25px; }
+        .modal-actions .withdraw-button { width: 100%; }
+        .cancel-button { width: 100%; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px; background: transparent; color: var(--text-color); font-size: 18px; font-weight: 600; cursor: pointer; transition: background-color 0.3s; }
+        .cancel-button:hover { background-color: var(--hover-bg); }
+        /* --- End Special Feature --- */
+
+    </style>
+</head>
+<body>
+    <script>
+        // Page protection script
+        const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
+        if (!loggedInUser) {
+            window.location.href = 'login.html';
+        }
+    </script>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">MyDashboard</div>
+            <ul class="sidebar-nav">
+                <li><a href="home.html"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="referrals.html"><i class="fas fa-users"></i> Referrals</a></li>
+                <li><a href="#" class="active"><i class="fas fa-hand-holding-usd"></i> Withdraw</a></li>
+                <li><a href="my-account.html"><i class="fas fa-user-circle"></i> My Account</a></li>
+                <!-- Watch Ads & Earn Money Box -->
+                <li style="margin: 12px 0;">
+                    <div style="background:#ffc107;border-radius:8px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08);color:#333;display:flex;align-items:center;justify-content:center;gap:10px;">
+                        <i class="fas fa-tv" style="font-size:22px;animation:spin 2s linear infinite;" title="Earn more with our special rewards!"></i>
+                        <div>
+                            <div style="font-size:12px;color:#888;margin-bottom:2px;position:relative;">🌟 <span style="text-decoration:underline;cursor:pointer;" title="Watch ads, earn money, and unlock exclusive bonuses!">Special Feature!</span></div>
+                            <div style="font-weight:600;font-size:15px;">Watch Ads & Earn Money</div>
+                            <div style="font-size:13px;">Earn <span style='color:#28a745;font-weight:600;'>$0.30</span> per ad. Watch up to 10 ads daily and earn up to <span style='color:#28a745;font-weight:600;'>$3.00</span> every 24 hours!</div>
+                            <a href="adds.html" style="display:inline-block;margin-top:6px;padding:5px 12px;background:#fff;color:#ffc107;border-radius:5px;font-size:13px;text-decoration:none;font-weight:500;">Start Earning</a>
+                        </div>
+                    </div>
+                    <style>
+                        @keyframes spin {
+                            0% { transform: rotate(0deg); }
+                            100% { transform: rotate(360deg); }
+                        }
+                    </style>
+                </li>
+                <!-- Exchange Services Box -->
+                <li style="margin: 12px 0;">
+                    <div style="background:#6a11cb;border-radius:8px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08);color:#fff;display:flex;align-items:center;justify-content:center;gap:10px;">
+                        <i class="fas fa-exchange-alt" style="font-size:22px;"></i>
+                        <div>
+                            <div style="font-weight:600;font-size:15px;">Exchange Services</div>
+                            <div style="font-size:13px;">Swap your rewards easily!</div>
+                            <a href="Exsange.html" style="display:inline-block;margin-top:6px;padding:5px 12px;background:#fff;color:#6a11cb;border-radius:5px;font-size:13px;text-decoration:none;font-weight:500;">Go to Exchange</a>
+                        </div>
+                    </div>
+                </li>
+                <li><a href="#" id="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </aside>
+        <main class="main-content">
+            <header class="main-header">
+                <h1 id="welcome-message">Withdraw Funds</h1>
+                <button id="theme-toggle-btn" class="theme-toggle-button"><i class="fas fa-moon"></i><i class="fas fa-sun" style="display: none;"></i></button>
+            </header>
+            <div class="content-box">
+                <div class="balance-display">
+                    <h3>Your Current Balance</h3>
+                    <p id="current-balance">$0.00</p>
+                </div>
+
+                <h2>Select Payment Method</h2>
+                <div class="payment-methods">
+                    <div class="payment-method">
+                        <input type="radio" id="paypal" name="payment_method" value="paypal" checked>
+                        <label for="paypal"><i class="fab fa-paypal"></i><span>PayPal</span></label>
+                    </div>
+                    <div class="payment-method">
+                        <input type="radio" id="binance" name="payment_method" value="binance">
+                        <label for="binance"><i class="fas fa-coins"></i><span>Binance</span></label>
+                    </div>
+                    <div class="payment-method">
+                        <input type="radio" id="payeer" name="payment_method" value="payeer">
+                        <label for="payeer"><i class="fas fa-wallet"></i><span>Payeer</span></label>
+                    </div>
+                    <div class="payment-method">
+                        <input type="radio" id="card" name="payment_method" value="card">
+                        <label for="card"><i class="far fa-credit-card"></i><span>Card</span></label>
+                    </div>
+                     <div class="payment-method">
+                        <input type="radio" id="wise" name="payment_method" value="wise">
+                        <label for="wise"><i class="fas fa-university"></i><span>Wise</span></label>
+                    </div>
+                </div>
+
+                <div class="estimation-box">
+                    <i class="fas fa-clock"></i>
+                    <div>
+                        <strong>Estimated Arrival:</strong>
+                        <span id="arrival-time-info">1-2 Business Days</span>
+                    </div>
+                </div>
+
+                <form id="withdraw-form">
+                    <div class="input-group">
+                        <label for="amount">Amount to Withdraw ($)</label>
+                        <input type="number" id="amount" placeholder="0.00" step="0.01" required>
+                        <p id="fee-info" style="font-size: 12px; color: var(--text-muted); margin-top: 5px;"></p>
+                        <p id="min-withdraw-info" style="font-size: 12px; color: var(--text-muted); margin-top: 5px;"></p>
+                    </div>
+                    <div id="paypal-fields" class="payment-fields active">
+                        <div class="input-group"><label for="paypal-email">PayPal Email</label><input type="email" id="paypal-email" placeholder="Enter your PayPal email" required></div>
+                    </div>
+                    <div id="binance-fields" class="payment-fields">
+                        <div class="input-group"><label for="binance-address">USDT (TRC20) Address</label><input type="text" id="binance-address" placeholder="Enter your Binance USDT TRC20 address"></div>
+                    </div>
+                    <div id="payeer-fields" class="payment-fields">
+                        <div class="input-group"><label for="payeer-account">Payeer Account</label><input type="text" id="payeer-account" placeholder="e.g., P12345678"></div>
+                    </div>
+                    <div id="card-fields" class="payment-fields">
+                        <div class="input-group"><label for="card-number">Card Number</label><input type="text" id="card-number" placeholder="**** **** **** ****"></div>
+                    </div>
+                    <div id="wise-fields" class="payment-fields">
+                        <div class="input-group"><label for="wise-email">Wise Email</label><input type="email" id="wise-email" placeholder="Enter your Wise account email"></div>
+                    </div>
+                    <button type="submit" class="withdraw-button">Request Withdrawal</button>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmation-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Confirm Withdrawal</h2>
+            <p>Please review the details of your withdrawal request.</p>
+            <div class="confirmation-details">
+                <p><strong>Amount:</strong> <span id="confirm-amount"></span></p>
+                <p><strong>Fee:</strong> <span id="confirm-fee"></span></p>
+                <p><strong>Total Deducted:</strong> <span id="confirm-total"></span></p>
+                <hr>
+                <p><strong>Method:</strong> <span id="confirm-method"></span></p>
+                <p><strong>Destination:</strong> <span id="confirm-destination"></span></p>
+                <p><strong>Est. Arrival:</strong> <span id="confirm-arrival"></span></p>
+            </div>
+            <div class="modal-actions">
+                <button id="confirm-withdraw-btn" class="withdraw-button">Confirm & Proceed</button>
+                <button id="cancel-withdraw-btn" class="cancel-button">Cancel</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        // This script runs after the page is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- Page Setup ---
+            const user = JSON.parse(sessionStorage.getItem('loggedInUser'));
+            if (user) {
+                document.getElementById('current-balance').textContent = '$' + (user.balance || 0).toFixed(2);
+            }
+
+            // --- Theme Switcher Logic ---
+            const themeToggleButton = document.getElementById('theme-toggle-btn');
+            const moonIcon = themeToggleButton.querySelector('.fa-moon');
+            const sunIcon = themeToggleButton.querySelector('.fa-sun');
+
+            function setTheme(isDark) {
+                if (isDark) {
+                    document.body.classList.add('dark-mode');
+                    moonIcon.style.display = 'none';
+                    sunIcon.style.display = 'inline-block';
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                    sunIcon.style.display = 'none';
+                    moonIcon.style.display = 'inline-block';
+                    localStorage.setItem('theme', 'light');
+                }
+            }
+
+            themeToggleButton.addEventListener('click', () => {
+                const isDarkMode = document.body.classList.contains('dark-mode');
+                setTheme(!isDarkMode);
+            });
+
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                setTheme(savedTheme === 'dark');
+            }
+
+            // --- Logout Logic ---
+            // Helper function to get all user data from localStorage
+            function getAllUsers() { return JSON.parse(atob(localStorage.getItem('users_encrypted') || btoa('[]'))); }
+            // Helper function to save all user data to localStorage
+            function saveAllUsers(users) { localStorage.setItem('users_encrypted', btoa(JSON.stringify(users))); }
+            // Helper function to save the current user's progress
+            function saveCurrentUserProgress() {
+                const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
+                if (!loggedInUser) return;
+                let allUsers = getAllUsers();
+                const userIndex = allUsers.findIndex(u => u.email === loggedInUser.email);
+                if (userIndex !== -1) {
+                    allUsers[userIndex] = loggedInUser;
+                    saveAllUsers(allUsers);
+                }
+            }
+            document.getElementById('logout-link').addEventListener('click', function(event) {
+                event.preventDefault();
+                saveCurrentUserProgress();
+                localStorage.removeItem('rememberedUser');
+                sessionStorage.removeItem('loggedInUser');
+                window.location.href = 'login.html';
+            });
+
+            // --- Payment Method Selection Logic ---
+            const paymentMethodRadios = document.querySelectorAll('input[name="payment_method"]');
+            const paymentFields = document.querySelectorAll('.payment-fields');
+            const amountInput = document.getElementById('amount');
+            const feeInfo = document.getElementById('fee-info');
+            const minWithdrawInfo = document.getElementById('min-withdraw-info');
+            const minimums = {
+                paypal: 50,
+                binance: 55,
+                payeer: 20,
+                card: 100,
+                wise: 100
+            };
+            const arrivalTimes = {
+                paypal: "1-2 Business Days",
+                binance: "Approx. 15-30 Minutes",
+                payeer: "Instant to 1 Hour",
+                card: "3-5 Business Days",
+                wise: "1-2 Business Days"
+            };
+            const WITHDRAWAL_FEE = 1.50;
+            const formInputs = {
+                paypal: document.getElementById('paypal-email'),
+                binance: document.getElementById('binance-address'),
+                payeer: document.getElementById('payeer-account'),
+                card: document.getElementById('card-number'),
+                wise: document.getElementById('wise-email')
+            };
+            const withdrawButton = document.querySelector('.withdraw-button');
+            const arrivalTimeInfo = document.getElementById('arrival-time-info');
+            // Modal elements
+            const confirmationModal = document.getElementById('confirmation-modal');
+            const confirmBtn = document.getElementById('confirm-withdraw-btn');
+            const cancelBtn = document.getElementById('cancel-withdraw-btn');
+            const closeBtn = confirmationModal.querySelector('.close-button');
+
+            // Store withdrawal data temporarily
+            let pendingWithdrawalData = {};
+
+            function updateMinWithdrawInfo() {
+                const selectedMethod = document.querySelector('input[name="payment_method"]:checked').value;
+                const minAmount = minimums[selectedMethod];
+                minWithdrawInfo.textContent = `Minimum withdrawal: $${minAmount.toFixed(2)}`;
+            }
+
+            function updateArrivalTime() {
+                const selectedMethod = document.querySelector('input[name="payment_method"]:checked').value;
+                arrivalTimeInfo.textContent = arrivalTimes[selectedMethod];
+            }
+
+            paymentMethodRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    paymentFields.forEach(field => field.classList.remove('active'));
+                    for (const key in formInputs) {
+                        if (formInputs[key]) formInputs[key].required = false;
+                    }
+                    const selectedField = document.getElementById(this.value + '-fields');
+                    if (selectedField) {
+                        selectedField.classList.add('active');
+                        if (formInputs[this.value]) formInputs[this.value].required = true;
+                    }
+                    updateMinWithdrawInfo();
+                    updateArrivalTime();
+                });
+            });
+
+            // --- Initial State and Disabling Logic ---
+            function setInitialState() {
+                const lowestMinimum = Math.min(...Object.values(minimums));
+                if (!user || !user.balance || user.balance < lowestMinimum) {
+                    amountInput.disabled = true;
+                    withdrawButton.disabled = true;
+                    withdrawButton.style.cursor = 'not-allowed';
+                    withdrawButton.style.backgroundColor = '#6c757d';
+                    minWithdrawInfo.textContent = `You need at least $${lowestMinimum.toFixed(2)} to make a withdrawal.`;
+                    minWithdrawInfo.style.color = 'red';
+                    feeInfo.style.display = 'none';
+                } else {
+                    updateMinWithdrawInfo(); // Set initial minimum on page load
+                    feeInfo.textContent = `A fixed fee of $${WITHDRAWAL_FEE.toFixed(2)} will be applied.`;
+                    updateArrivalTime(); // Set initial arrival time
+                }
+            }
+            setInitialState();
+
+            // --- Withdrawal Form Logic ---
+            document.getElementById('withdraw-form').addEventListener('submit', function(event) {
+                event.preventDefault();
+                const user = JSON.parse(sessionStorage.getItem('loggedInUser'));
+                const amount = parseFloat(document.getElementById('amount').value);
+                const userBalance = user ? (user.balance || 0) : 0;
+                const selectedMethod = document.querySelector('input[name="payment_method"]:checked').value;
+                const minAmount = minimums[selectedMethod];
+                const totalDeducted = amount + WITHDRAWAL_FEE;
+
+                if (amount < minAmount) {
+                    alert(`The minimum withdrawal for ${selectedMethod.charAt(0).toUpperCase() + selectedMethod.slice(1)} is $${minAmount.toFixed(2)}.`);
+                    return;
+                }
+
+                if (totalDeducted > userBalance) {
+                    alert(`You do not have enough funds to withdraw $${amount.toFixed(2)} plus the $${WITHDRAWAL_FEE.toFixed(2)} fee.`);
+                    return;
+                }
+                if (!amount || amount <= 0) {
+                    alert("Please enter a valid withdrawal amount.");
+                    return;
+                }
+
+                // Get destination details
+                const destinationInput = formInputs[selectedMethod];
+                const destinationValue = destinationInput ? destinationInput.value : 'N/A';
+
+                // Store data and show modal instead of processing immediately
+                pendingWithdrawalData = { amount, selectedMethod, totalDeducted, destinationValue, arrivalTime: arrivalTimes[selectedMethod] };
+
+                document.getElementById('confirm-amount').textContent = `$${amount.toFixed(2)}`;
+                document.getElementById('confirm-fee').textContent = `$${WITHDRAWAL_FEE.toFixed(2)}`;
+                document.getElementById('confirm-total').textContent = `$${totalDeducted.toFixed(2)}`;
+                document.getElementById('confirm-method').textContent = selectedMethod.charAt(0).toUpperCase() + selectedMethod.slice(1);
+                document.getElementById('confirm-destination').textContent = destinationValue;
+                document.getElementById('confirm-arrival').textContent = pendingWithdrawalData.arrivalTime;
+
+                confirmationModal.classList.add('show');
+            });
+
+            // --- Modal Confirmation Logic ---
+            function processWithdrawal() {
+                let user = JSON.parse(sessionStorage.getItem('loggedInUser'));
+                const { amount, selectedMethod, totalDeducted } = pendingWithdrawalData;
+
+                const newTransaction = {
+                    date: new Date().toLocaleDateString(),
+                    amount: amount,
+                    method: selectedMethod,
+                    status: 'Completed'
+                };
+
+                if (!user.transactions) {
+                    user.transactions = [];
+                }
+                user.transactions.push(newTransaction);
+
+                user.balance -= totalDeducted;
+                sessionStorage.setItem('loggedInUser', JSON.stringify(user));
+                document.getElementById('current-balance').textContent = '$' + user.balance.toFixed(2);
+
+                confirmationModal.classList.remove('show');
+                alert(`A total of $${totalDeducted.toFixed(2)} (including a $${WITHDRAWAL_FEE.toFixed(2)} fee) has been deducted. Your new balance is $${user.balance.toFixed(2)}.`);
+                document.getElementById('withdraw-form').reset();
+                setInitialState(); // Re-check if user can still withdraw
+            }
+
+            function closeModal() {
+                confirmationModal.classList.remove('show');
+                pendingWithdrawalData = {}; // Clear pending data
+            }
+
+            confirmBtn.addEventListener('click', processWithdrawal);
+            cancelBtn.addEventListener('click', closeModal);
+            closeBtn.addEventListener('click', closeModal);
+            window.addEventListener('click', (event) => { if (event.target == confirmationModal) closeModal(); });
+        });
+    </script>
+</body>
+</html>

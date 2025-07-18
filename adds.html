@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watch Ads & Earn Money</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 500px;
+            margin: 60px auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            padding: 40px 30px;
+            text-align: center;
+        }
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 18px;
+            color: #6a11cb;
+        }
+        .ad-box {
+            background: #ffc107;
+            border-radius: 8px;
+            padding: 24px 16px;
+            margin: 30px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+        .ad-box i {
+            font-size: 38px;
+            color: #6a11cb;
+            animation: spin 2s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .ad-box .ad-desc {
+            font-size: 16px;
+            font-weight: 500;
+        }
+        .ad-box .ad-btn {
+            margin-top: 10px;
+            padding: 8px 22px;
+            background: #6a11cb;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .ad-box .ad-btn:hover {
+            background: #2575fc;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 30px;
+            color: #6a11cb;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 15px;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Watch Ads & Earn Money</h1>
+        <div class="ad-box">
+            <i class="fas fa-tv" title="Earn more with our special rewards!"></i>
+            <div style="font-size:12px;color:#888;margin-bottom:2px;position:relative;">
+                🌟 <span style="text-decoration:underline;cursor:pointer;" title="Watch ads, earn money, and unlock exclusive bonuses!">Special Feature!</span>
+            </div>
+            <div class="ad-desc">Get paid <span style="color:#28a745;font-weight:600;">$0.30</span> for every ad you watch!<br>Maximum 10 ads per 24 hours.</div>
+            <div id="ads-progress" style="margin:10px 0 18px 0;font-size:15px;color:#2575fc;font-weight:500;"></div>
+            <button class="ad-btn" id="watch-ad-btn">Watch Ad</button>
+        </div>
+        <!-- Google AdSense Banner -->
+        <div id="adsense-banner" style="width:100%;max-width:350px;margin:30px auto 0 auto;text-align:center;">
+            <div style="font-size:12px;color:#888;margin-bottom:4px;">🌟 Special Feature!</div>
+            <ins class="adsbygoogle"
+                 style="display:inline-block;width:320px;height:100px"
+                 data-ad-client="ca-app-pub-4896370371108956/5747787094"
+                 data-ad-slot="5747787094"></ins>
+        </div>
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+        <script>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+        <a href="home.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+        <script>
+        // --- Ad Watching Logic ---
+        const AD_REWARD = 0.30;
+        const MAX_ADS_PER_DAY = 10;
+        const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
+        const watchAdBtn = document.getElementById('watch-ad-btn');
+        const adsProgress = document.getElementById('ads-progress');
+
+        function getUser() {
+            return JSON.parse(sessionStorage.getItem('loggedInUser'));
+        }
+        function setUser(user) {
+            sessionStorage.setItem('loggedInUser', JSON.stringify(user));
+        }
+
+        function getAdWatchData() {
+            let user = getUser();
+            if (!user) return { count: 0, lastReset: Date.now() };
+            if (!user.adsWatchedData) {
+                user.adsWatchedData = { count: 0, lastReset: Date.now() };
+                setUser(user);
+            }
+            // Reset if 24h passed
+            if (Date.now() - user.adsWatchedData.lastReset > TWENTY_FOUR_HOURS_MS) {
+                user.adsWatchedData = { count: 0, lastReset: Date.now() };
+                setUser(user);
+            }
+            return user.adsWatchedData;
+        }
+
+        function updateProgress() {
+            const data = getAdWatchData();
+            adsProgress.textContent = `Ads watched today: ${data.count} / ${MAX_ADS_PER_DAY}`;
+            watchAdBtn.disabled = data.count >= MAX_ADS_PER_DAY;
+            watchAdBtn.textContent = data.count >= MAX_ADS_PER_DAY ? 'Limit Reached' : 'Watch Ad';
+        }
+
+        watchAdBtn.addEventListener('click', function() {
+            let user = getUser();
+            if (!user) {
+                alert('Please log in to earn rewards.');
+                window.location.href = 'login.html';
+                return;
+            }
+            let data = getAdWatchData();
+            if (data.count >= MAX_ADS_PER_DAY) {
+                alert('You have reached the daily limit of 10 ads. Try again tomorrow!');
+                return;
+            }
+            // Simulate ad watching (replace with real ad logic if needed)
+            watchAdBtn.disabled = true;
+            watchAdBtn.textContent = 'Watching...';
+            setTimeout(() => {
+                // Reward user
+                user.balance = (user.balance || 0) + AD_REWARD;
+                if (!user.activityLog) user.activityLog = [];
+                user.activityLog.push({ date: new Date().toLocaleString(), action: `Watched ad: +$${AD_REWARD.toFixed(2)}` });
+                // Update ad watch data
+                data.count++;
+                user.adsWatchedData = data;
+                setUser(user);
+                updateProgress();
+                watchAdBtn.textContent = data.count >= MAX_ADS_PER_DAY ? 'Limit Reached' : 'Watch Ad';
+                watchAdBtn.disabled = data.count >= MAX_ADS_PER_DAY;
+                alert(`Ad watched! You earned $${AD_REWARD.toFixed(2)}.`);
+            }, 3000); // Simulate 3 seconds ad
+        });
+
+        // On page load
+        updateProgress();
+        </script>
+    </div>
+</body>
+</html>

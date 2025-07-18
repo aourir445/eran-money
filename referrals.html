@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Referrals - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --sidebar-bg: #ffffff;
+            --content-bg: #ffffff;
+            --text-color: #333;
+            --text-muted: #666;
+            --border-color: #eee;
+            --primary-color: #6a11cb;
+            --hover-bg: #f0f2f5;
+        }
+        body.dark-mode {
+            --bg-color: #121212;
+            --sidebar-bg: #1e1e1e;
+            --content-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --text-muted: #a0a0a0;
+            --border-color: #333;
+            --hover-bg: #333;
+        }
+        /* Reusing styles from home.html for consistency */
+        body, html { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; background-color: var(--bg-color); color: var(--text-color); }
+        .dashboard-container { display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background: var(--sidebar-bg); box-shadow: 2px 0 5px rgba(0,0,0,0.1); color: var(--text-color); display: flex; flex-direction: column; padding: 20px; border-right: 1px solid var(--border-color); }
+        .sidebar-header { font-size: 24px; font-weight: 600; padding-bottom: 20px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); color: #6a11cb; }
+        .sidebar-nav { list-style: none; padding: 0; margin: 0; }
+        .sidebar-nav li a { display: flex; align-items: center; padding: 15px 10px; color: var(--text-muted); text-decoration: none; border-radius: 8px; margin-bottom: 5px; transition: background-color 0.3s, color 0.3s; }
+        .sidebar-nav li a i { margin-right: 15px; width: 20px; text-align: center; }
+        .sidebar-nav li a:hover, .sidebar-nav li a.active { background-color: #6a11cb; color: #fff; }
+        .main-content { flex-grow: 1; padding: 30px; }
+        .main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .main-header h1 { margin: 0; font-size: 28px; font-weight: 600; }
+        .content-box { background: var(--content-bg); padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        .content-box h2 { margin-top: 0; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+        .referral-link-box { text-align: center; }
+        .referral-link-box p { color: var(--text-muted); margin-bottom: 15px; }
+        .referral-link-wrapper { display: flex; align-items: center; gap: 15px; }
+        .referral-link { flex-grow: 1; font-family: 'Courier New', Courier, monospace; background-color: var(--hover-bg); padding: 15px; border-radius: 8px; font-size: 16px; color: var(--text-color); border: 1px dashed #ccc; word-break: break-all; }
+        .copy-button { padding: 15px 20px; border: none; background-color: #6a11cb; color: white; border-radius: 8px; cursor: pointer; font-weight: 500; transition: background-color 0.3s; }
+        .copy-button:hover { background-color: #5a0fb1; }
+        .referrals-list ul { list-style: none; padding: 0; }
+        .referrals-list li { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid var(--border-color); }
+        .referrals-list li:last-child { border-bottom: none; }
+        .theme-toggle-button {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            transition: all 0.3s;
+        }
+        .theme-toggle-button:hover { background-color: var(--hover-bg); color: var(--primary-color); border-color: var(--primary-color); }
+    </style>
+</head>
+<body>
+    <script>
+        // Page protection script
+        const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
+        if (!loggedInUser) {
+            window.location.href = 'login.html';
+        }
+    </script>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">MyDashboard</div>
+            <ul class="sidebar-nav">
+                <li><a href="home.html"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="#" class="active"><i class="fas fa-users"></i> Referrals</a></li>
+                <li><a href="withraw.html"><i class="fas fa-hand-holding-usd"></i> Withdraw</a></li>
+                <li><a href="my-account.html"><i class="fas fa-user-circle"></i> My Account</a></li>
+                <!-- Watch Ads & Earn Money Box -->
+                <li style="margin: 12px 0;">
+                    <div style="background:#ffc107;border-radius:8px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08);color:#333;display:flex;align-items:center;justify-content:center;gap:10px;">
+                        <i class="fas fa-tv" style="font-size:22px;"></i>
+                        <div>
+                            <div style="font-weight:600;font-size:15px;">Watch Ads & Earn Money</div>
+                            <div style="font-size:13px;">Earn <span style='color:#28a745;font-weight:600;'>$0.30</span> per ad. Watch up to 10 ads daily and earn up to <span style='color:#28a745;font-weight:600;'>$3.00</span> every 24 hours!</div>
+                            <a href="adds.html" style="display:inline-block;margin-top:6px;padding:5px 12px;background:#fff;color:#ffc107;border-radius:5px;font-size:13px;text-decoration:none;font-weight:500;">Start Earning</a>
+                        </div>
+                    </div>
+                </li>
+                <!-- Exchange Services Box -->
+                <li style="margin: 12px 0;">
+                    <div style="background:#6a11cb;border-radius:8px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08);color:#fff;display:flex;align-items:center;justify-content:center;gap:10px;">
+                        <i class="fas fa-exchange-alt" style="font-size:22px;"></i>
+                        <div>
+                            <div style="font-weight:600;font-size:15px;">Exchange Services</div>
+                            <div style="font-size:13px;">Swap your rewards easily!</div>
+                            <a href="Exsange.html" style="display:inline-block;margin-top:6px;padding:5px 12px;background:#fff;color:#6a11cb;border-radius:5px;font-size:13px;text-decoration:none;font-weight:500;">Go to Exchange</a>
+                        </div>
+                    </div>
+                </li>
+                <li><a href="#" id="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </aside>
+        <main class="main-content">
+            <header class="main-header">
+                <h1>My Referrals</h1>
+                <button id="theme-toggle-btn" class="theme-toggle-button"><i class="fas fa-moon"></i><i class="fas fa-sun" style="display: none;"></i></button>
+            </header>
+            <div class="content-box">
+                <h2>Your Unique Referral Link</h2>
+                <div class="referral-link-box">
+                    <p>Share this link with your friends. You'll earn a bonus for each friend who signs up!</p>
+                    <div class="referral-link-wrapper">
+                        <div id="referral-link" class="referral-link">Generating...</div>
+                        <button id="copy-link-btn" class="copy-button">Copy Link</button>
+                    </div>
+                </div>
+            </div>
+            <div class="content-box">
+                <h2 id="referrals-title">Your Referred Users (0)</h2>
+                <div class="referrals-list">
+                    <ul>
+                        <!-- Referred users will be dynamically added here -->
+                    </ul>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script>
+        // --- Helper functions for user data ---
+        function getAllUsers() { return JSON.parse(atob(localStorage.getItem('users_encrypted') || btoa('[]'))); }
+        function saveAllUsers(users) { localStorage.setItem('users_encrypted', btoa(JSON.stringify(users))); }
+        function saveCurrentUserProgress() {
+            const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
+            if (!loggedInUser || loggedInUser.email === 'guest@example.com') return;
+            let allUsers = getAllUsers();
+            const userIndex = allUsers.findIndex(u => u.email === loggedInUser.email);
+            if (userIndex !== -1) {
+                allUsers[userIndex] = loggedInUser;
+                saveAllUsers(allUsers);
+            }
+        }
+
+        // --- Page Initialization ---
+        document.addEventListener('DOMContentLoaded', function() {
+            const user = JSON.parse(sessionStorage.getItem('loggedInUser'));
+            if (user) {
+                // Generate a simple referral link based on email
+                const referralCode = btoa(user.email).substring(0, 8); // Base64 encode email and take first 8 chars
+                document.getElementById('referral-link').textContent = `${window.location.origin}/rogester.html?ref=${referralCode}`;
+
+                // Dynamically display referred users
+                const referralsListContainer = document.querySelector('.referrals-list ul');
+                const referralsTitle = document.getElementById('referrals-title');
+                const referredUsers = user.referredUsers || [];
+
+                referralsTitle.textContent = `Your Referred Users (${referredUsers.length})`;
+                referralsListContainer.innerHTML = ''; // Clear placeholder content
+
+                if (referredUsers.length > 0) {
+                    referredUsers.forEach(referredEmail => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<span>${referredEmail}</span> <span>+ $1.00</span>`;
+                        referralsListContainer.appendChild(li);
+                    });
+                } else {
+                    referralsListContainer.innerHTML = '<li>You have not referred any users yet.</li>';
+                }
+            }
+
+            // --- Theme Switcher Logic ---
+            const themeToggleButton = document.getElementById('theme-toggle-btn');
+            const moonIcon = themeToggleButton.querySelector('.fa-moon');
+            const sunIcon = themeToggleButton.querySelector('.fa-sun');
+
+            function setTheme(isDark) {
+                if (isDark) {
+                    document.body.classList.add('dark-mode');
+                    moonIcon.style.display = 'none';
+                    sunIcon.style.display = 'inline-block';
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                    sunIcon.style.display = 'none';
+                    moonIcon.style.display = 'inline-block';
+                    localStorage.setItem('theme', 'light');
+                }
+            }
+
+            themeToggleButton.addEventListener('click', () => {
+                const isDarkMode = document.body.classList.contains('dark-mode');
+                setTheme(!isDarkMode);
+            });
+
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                setTheme(savedTheme === 'dark');
+            }
+
+            // --- Logout Logic ---
+            document.getElementById('logout-link').addEventListener('click', function(event) {
+                event.preventDefault();
+                saveCurrentUserProgress();
+                sessionStorage.removeItem('loggedInUser');
+                localStorage.removeItem('rememberedUser');
+                window.location.href = 'login.html';
+            });
+
+            // --- Copy Link Logic ---
+            document.getElementById('copy-link-btn').addEventListener('click', function() {
+                const linkText = document.getElementById('referral-link').textContent;
+                navigator.clipboard.writeText(linkText).then(() => {
+                    alert('Referral link copied to clipboard!');
+                }).catch(err => {
+                    console.error('Failed to copy text: ', err);
+                    alert('Failed to copy link. Please copy it manually.');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

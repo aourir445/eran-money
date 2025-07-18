@@ -1,0 +1,1579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --sidebar-bg: #ffffff;
+            --content-bg: #ffffff;
+            --text-color: #333;
+            --text-muted: #666;
+            --border-color: #eee;
+            --primary-color: #6a11cb;
+            --hover-bg: #f0f2f5;
+            --watched-overlay: rgba(255, 255, 255, 0.8);
+        }
+        body.dark-mode {
+            --bg-color: #121212;
+            --sidebar-bg: #1e1e1e;
+            --content-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --text-muted: #a0a0a0;
+            --border-color: #333;
+            --hover-bg: #333;
+            --watched-overlay: rgba(30, 30, 30, 0.8);
+        }
+        /* Basic Reset */
+        body, html {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar-bg);
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .sidebar-header {
+            font-size: 24px;
+            font-weight: 600;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            color: #6a11cb;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-nav li a {
+            display: flex;
+            align-items: center;
+            padding: 15px 10px;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .sidebar-nav li a i {
+            margin-right: 15px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar-nav li a:hover, .sidebar-nav li a.active {
+            background-color: #6a11cb;
+            color: #fff;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            flex-grow: 1;
+            padding: 30px;
+        }
+
+        .main-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .main-header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* --- New Notification Bell Feature --- */
+        .header-actions {
+            position: relative;
+        }
+        .notification-bell {
+            font-size: 22px;
+            color: var(--text-muted);
+            cursor: pointer;
+            position: relative;
+            transition: color 0.3s;
+        }
+        .notification-count {
+            position: absolute;
+            top: -5px;
+            right: -10px;
+            background-color: #dc3545;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 12px;
+            font-weight: 600;
+            display: none; /* Hidden by default */
+        }
+        .notification-panel {
+            display: none;
+            position: absolute;
+            top: 40px;
+            right: 0;
+            width: 320px;
+            background-color: var(--content-bg);
+            border-radius: 8px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            z-index: 100;
+            border: 1px solid var(--border-color);
+        }
+        .notification-panel.show { display: block; }
+        .notification-header { padding: 15px; font-weight: 600; border-bottom: 1px solid var(--border-color); }
+        .notification-list { list-style: none; padding: 0; margin: 0; max-height: 300px; overflow-y: auto; }
+        .notification-list li { padding: 15px; border-bottom: 1px solid var(--border-color); font-size: 14px; color: var(--text-color); }
+        .notification-list li:last-child { border-bottom: none; }
+        /* --- End Notification Feature --- */
+
+        /* --- Theme Toggle Button --- */
+        .theme-toggle-button {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            transition: all 0.3s;
+        }
+        .theme-toggle-button:hover { background-color: var(--hover-bg); color: var(--primary-color); border-color: var(--primary-color); }
+
+        /* Stats Cards */
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: var(--content-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+        }
+
+        .card i {
+            font-size: 28px;
+            padding: 15px;
+            border-radius: 50%;
+            margin-right: 20px;
+        }
+
+        .card .fa-wallet { background-color: #e0f7fa; color: #00796b; }
+        .card .fa-play-circle { background-color: #fff3e0; color: #f57c00; }
+        .card .fa-users { background-color: #e8eaf6; color: #303f9f; }
+
+        .card-info h3 {
+            margin: 0 0 5px 0;
+            font-size: 16px;
+            color: var(--text-muted);
+        }
+
+        .card-info p {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        /* --- New XP Bonus Progress Section --- */
+        .xp-progress-section {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: #fff;
+            padding: 20px 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        .xp-progress-section::before {
+            content: '\f005'; /* Font Awesome star icon */
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            font-size: 32px;
+            opacity: 0.8;
+        }
+        .xp-info { flex-grow: 1; }
+        .xp-info h2 {
+            margin: 0 0 5px 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .xp-info p {
+            margin: 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .xp-bar-area {
+            flex-basis: 250px;
+            text-align: right;
+        }
+        .xp-bar-container {
+            width: 100%;
+            height: 10px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            margin-bottom: 5px;
+            overflow: hidden;
+            border: none;
+        }
+        .xp-bar {
+            width: 0%;
+            height: 100%;
+            background: #ffffff;
+            border-radius: 5px;
+            transition: width 0.5s ease-in-out;
+        }
+        #xp-progress-text {
+            font-weight: 500;
+            font-size: 13px;
+            color: #fff;
+        }
+        /* --- End XP Bonus Section --- */
+
+        /* --- New Video Showcase Section --- */
+        .video-showcase {
+            display: flex;
+            gap: 30px;
+            background: var(--content-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .main-video-player {
+            flex: 3; /* Takes up 3/4 of the space */
+            min-width: 0;
+        }
+
+        .video-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .video-header h2 {
+            margin: 0;
+        }
+        .reward-tag {
+            background: linear-gradient(135deg, #28a745, #218838);
+            color: #fff;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .reward-tag::before {
+            content: '\f005'; /* Font Awesome star icon */
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+        }
+
+        .video-playlist {
+            flex: 1; /* Takes up 1/4 of the space */
+            display: flex;
+            flex-direction: column;
+        }
+
+        .video-playlist h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 18px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .playlist-scroll {
+            overflow-y: auto;
+            max-height: 450px; /* Adjust as needed */
+        }
+
+        .playlist-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+        }
+
+        .playlist-item:hover, .playlist-item.active {
+            background-color: var(--hover-bg);
+        }
+
+        .playlist-item img {
+            width: 100px;
+            height: 56px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-right: 15px;
+        }
+
+        .playlist-item-info h4 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 1.3;
+            color: var(--text-color);
+        }
+
+        .video-player-wrapper {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            height: 0;
+            overflow: hidden;
+            border-radius: 8px;
+            background: var(--content-bg);
+            margin-bottom: 20px;
+        }
+
+        .video-player-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        .video-controls {
+            display: flex;
+            gap: 15px;
+        }
+
+        .video-controls button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        /* Style for the reward progress bar */
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            display: none; /* Hidden by default */
+        }
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            border-radius: 4px;
+            transition: width 0.1s linear;
+        }
+
+        /* Style for playlist items that have been watched */
+        .playlist-item.watched {
+            opacity: 0.6;
+            position: relative;
+        }
+
+        .playlist-item.watched::after {
+            content: '\f058'; /* Font Awesome check circle solid icon */
+            font-family: "Font Awesome 6 Free"; 
+            font-weight: 900; 
+            position: absolute;
+            top: 50%;
+            left: 50px; /* Center of the thumbnail image */
+            transform: translate(-50%, -50%);
+            font-size: 28px;
+            color: #28a745;
+            background-color: var(--watched-overlay);
+            border-radius: 50%;
+            pointer-events: none; /* So it doesn't interfere with clicks */
+        }
+
+        .btn-next {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-next:hover { background-color: #0069d9; }
+
+        /* Responsive */
+        /* --- Special Feature: Daily Bonus Modal & Toasts --- */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal-content {
+            background-color: var(--content-bg);
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+        .modal-content i { font-size: 48px; color: #ffc107; margin-bottom: 20px; }
+        .modal-content h2 { margin-top: 0; }
+        .modal-content p { color: var(--text-muted); margin-bottom: 30px; }
+        .modal-content button { background-color: #28a745; color: white; width: 100%; }
+        .modal-content button:hover { background-color: #218838; }
+
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 1050; }
+        .toast { background-color: #28a745; color: white; padding: 15px 20px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); margin-bottom: 10px; opacity: 0; transition: all 0.4s ease; transform: translateX(100%); }
+        .toast.show { opacity: 1; transform: translateX(0); }
+        /* --- End Special Feature --- */
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                flex-direction: column;
+            }
+            .video-showcase {
+                flex-direction: column;
+            }
+            .playlist-scroll {
+                max-height: 250px;
+            }
+            .sidebar {
+                width: 100%;
+                height: auto;
+                box-shadow: none;
+                border-bottom: 1px solid #eee;
+            }
+            .main-content {
+                padding: 20px;
+            }
+        }
+        /* AdSense Banner Theme Support */
+        #adsense-banner {
+            transition: background 0.3s, color 0.3s;
+        }
+        body.dark-mode #adsense-banner {
+            background: #222 !important;
+            color: #fff !important;
+        }
+        body.dark-mode #adsense-banner ins.adsbygoogle {
+            background: #222 !important;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        // This script runs immediately to protect the page
+        const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
+        if (!loggedInUser) {
+            // If no user is logged in, redirect to the login page
+            window.location.href = 'login.html';
+        }
+    </script>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                MyDashboard
+            </div>
+
+
+            <ul class="sidebar-nav">
+                <li><a href="home.html" class="active"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="referrals.html"><i class="fas fa-users"></i> Referrals</a></li>
+                <li><a href="withraw.html"><i class="fas fa-hand-holding-usd"></i> Withdraw</a></li>
+                <li><a href="my-account.html"><i class="fas fa-user-circle"></i> My Account</a></li>
+                <!-- Watch Ads & Earn Money Box -->
+
+
+                <li style="margin: 12px 0;">
+                    <div style="background:#ffc107;border-radius:8px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08);color:#333;display:flex;align-items:center;justify-content:center;gap:10px;">
+                        <i class="fas fa-tv" style="font-size:22px;"></i>
+                        <div>
+                            <div style="font-weight:600;font-size:15px;">Watch Ads & Earn Money</div>
+                            <div style="font-size:13px;">Earn <span style='color:#28a745;font-weight:600;'>$0.30</span> per ad. Watch up to 10 ads daily and earn up to <span style='color:#28a745;font-weight:600;'>$3.00</span> every 24 hours!</div>
+                            <a href="adds.html" style="display:inline-block;margin-top:6px;padding:5px 12px;background:#fff;color:#ffc107;border-radius:5px;font-size:13px;text-decoration:none;font-weight:500;">Start Earning</a>
+                        </div>
+                    </div>
+                </li>
+                <!-- Exchange Services Box -->
+                <li style="margin: 12px 0;">
+                    <div style="background:#6a11cb;border-radius:8px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08);color:#fff;display:flex;align-items:center;justify-content:center;gap:10px;">
+                        <i class="fas fa-exchange-alt" style="font-size:22px;"></i>
+                        <div>
+                            <div style="font-weight:600;font-size:15px;">Exchange Services</div>
+                            <div style="font-size:13px;">Swap your rewards easily!</div>
+                            <a href="Exsange.html" style="display:inline-block;margin-top:6px;padding:5px 12px;background:#fff;color:#6a11cb;border-radius:5px;font-size:13px;text-decoration:none;font-weight:500;">Go to Exchange</a>
+                        </div>
+                    </div>
+                </li>
+                <!-- Deposit Money Box -->
+                <li style="margin: 12px 0;">
+                    <div style="background:#6a11cb;border-radius:8px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08);color:#fff;display:flex;align-items:center;justify-content:center;gap:10px;">
+                        <i class="fas fa-university" style="font-size:22px;"></i>
+                        <div>
+                            <div style="font-weight:600;font-size:15px;">Deposit Money</div>
+                            <div style="font-size:13px;">Add funds to your account securely and instantly!</div>
+                            <a href="deposit.html" style="display:inline-block;margin-top:6px;padding:5px 12px;background:#fff;color:#6a11cb;border-radius:5px;font-size:13px;text-decoration:none;font-weight:500;">Deposit Now</a>
+                        </div>
+                    </div>
+                </li>
+                <li><a href="#" id="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <header class="main-header">
+                <h1 id="welcome-message">Welcome Back, User!</h1>
+                <div class="header-controls">
+                    <div class="header-actions">
+                        <div class="notification-bell" id="notification-bell">
+                            <i class="fas fa-bell"></i>
+                            <span class="notification-count" id="notification-count">0</span>
+                        </div>
+                        <div class="notification-panel" id="notification-panel">
+                            <div class="notification-header">Notifications</div>
+                            <ul class="notification-list" id="notification-list">
+                            </ul>
+                        </div>
+                    </div>
+                    <button id="theme-toggle-btn" class="theme-toggle-button">
+                        <i class="fas fa-moon"></i>
+                        <i class="fas fa-sun" style="display: none;"></i>
+                    </button>
+                </div>
+            </header>
+
+            <section class="stats-cards">
+                <div class="card">
+                    <i class="fas fa-wallet"></i>
+                    <div class="card-info">
+                        <h3>Balance</h3>
+                        <p id="balance-amount">$0.00</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <i class="fas fa-play-circle"></i>
+                    <div class="card-info">
+                        <h3>Videos Watched</h3>
+                        <p id="videos-watched-count">0</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <i class="fas fa-users"></i>
+                    <div class="card-info">
+                        <h3>Referrals</h3>
+                        <p id="referrals-count">0</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <i class="fas fa-medal" id="grade-icon" style="background-color:#fff3e0; color:#cd7f32;"></i>
+                    <div class="card-info">
+                        <h3>Level & Grade</h3>
+                        <p id="level-grade">Bronze (Lv. 1)</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <i class="fas fa-bolt"></i>
+                    <div class="card-info">
+                        <h3>Daily Challenge</h3>
+                        <p id="daily-challenge-text">Loading...</p>
+                        <div class="daily-challenge-progress" id="daily-challenge-progress"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="xp-progress-section">
+                <div class="xp-info">
+                    <h2>XP Bonus Progress</h2>
+                    <p>Earn a <strong>$1.00 bonus</strong> for every 50 videos you watch!</p>
+                </div>
+                <div class="xp-bar-area">
+                    <div class="xp-bar-container"><div id="xp-bar" class="xp-bar"></div></div>
+                    <span id="xp-progress-text">0 / 50 Videos</span>
+                </div>
+            </section>
+
+            <section class="video-showcase">
+                <div class="main-video-player">
+                    <div class="video-header">
+                        <h2 id="video-title">Watch: Amazing Nature Scenery</h2>
+                        <span class="reward-tag">+ $0.50</span>
+                    </div>
+                    <div class="video-player-wrapper">
+                        <div id="player"></div> <!-- YouTube API will replace this -->
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar"></div>
+                    </div>
+                    <div class="video-controls">
+                        <button class="btn-next" id="next-video-btn" disabled>Claim Reward</button>
+                    </div>
+                </div>
+                <div class="video-playlist">
+                    <h3>Next Videos</h3>
+                    <div class="playlist-scroll">
+                        <div class="playlist-item active" data-video-id="LXb3EKWsInQ" data-video-title="Amazing Nature Scenery">
+                            <img src="https://img.youtube.com/vi/LXb3EKWsInQ/0.jpg" alt="Video Thumbnail">
+                            <div class="playlist-item-info"><h4>Amazing Nature Scenery</h4></div>
+                        </div>
+                        <div class="playlist-item" data-video-id="gWH74VSH3uE" data-video-title="A Tour of New York City">
+                            <img src="https://img.youtube.com/vi/gWH74VSH3uE/0.jpg" alt="Video Thumbnail">
+                            <div class="playlist-item-info"><h4>A Tour of New York City</h4></div>
+                        </div>
+                        <div class="playlist-item" data-video-id="T-gWH74VSH3uE" data-video-title="The World of AI">
+                            <img src="https://img.youtube.com/vi/T-gWH74VSH3uE/0.jpg" alt="Video Thumbnail">
+                            <div class="playlist-item-info"><h4>The World of AI</h4></div>
+                        </div>
+                        <div class="playlist-item" data-video-id="gWH74VSH3uE" data-video-title="Lofi Hip Hop Radio - Beats to Relax/Study to">
+                            <img src="https://img.youtube.com/vi/gWH74VSH3uE/0.jpg" alt="Video Thumbnail">
+                            <div class="playlist-item-info"><h4>Lofi Hip Hop Radio - Beats to Relax/Study to</h4></div>
+                        </div>
+                        <div class="playlist-item" data-video-id="gWH74VSH3uE" data-video-title="Delicious Pizza Recipe">
+                            <img src="https://img.youtube.com/vi/gWH74VSH3uE/0.jpg" alt="Video Thumbnail">
+                            <div class="playlist-item-info"><h4>Delicious Pizza Recipe</h4></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Special Feature: Daily Bonus Modal -->
+    <div id="daily-bonus-modal" class="modal-overlay">
+        <div class="modal-content">
+            <i class="fas fa-gift"></i>
+            <h2>Daily Bonus!</h2>
+            <p>Welcome back! Claim your daily bonus of $0.10 for logging in today.</p>
+            <button id="claim-bonus-btn" class="video-controls button">Claim My Bonus</button>
+        </div>
+    </div>
+
+    <!-- Special Feature: Lucky Spin Modal -->
+    <div id="lucky-spin-modal" class="modal-overlay">
+        <div class="modal-content">
+            <i class="fas fa-dice"></i>
+            <h2>Lucky Spin!</h2>
+            <p>Spin the wheel for a chance to win a random bonus! (Once per day)</p>
+            <div id="spin-wheel" style="margin: 20px auto; width: 120px; height: 120px; border-radius: 50%; background: conic-gradient(#6a11cb 0% 25%, #2575fc 25% 50%, #ffc107 50% 75%, #28a745 75% 100%); display: flex; align-items: center; justify-content: center; font-size: 32px; color: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.2); transition: transform 2s cubic-bezier(.17,.67,.83,.67);">
+                <span id="spin-result" style="font-weight: bold;"></span>
+            </div>
+            <button id="spin-btn" class="video-controls button">Spin Now</button>
+            <button id="close-spin-btn" class="video-controls button" style="background:#dc3545; color:#fff; margin-top:10px;">Close</button>
+        </div>
+    </div>
+
+    <!-- Special Feature: Toast Notification Container -->
+    <div id="toast-container" class="toast-container">
+        <!-- Toasts will be added here dynamically -->
+    </div>
+
+    <!-- Special Feature: Referral Leaderboard Modal -->
+    <div id="leaderboard-modal" class="modal-overlay">
+        <div class="modal-content">
+            <i class="fas fa-trophy"></i>
+            <h2>Referral Leaderboard</h2>
+            <p>See who has the most referrals!</p>
+            <ul id="leaderboard-list" style="text-align:left; margin:20px 0; padding:0; list-style:none;"></ul>
+            <button id="close-leaderboard-btn" class="video-controls button" style="background:#dc3545; color:#fff; margin-top:10px;">Close</button>
+        </div>
+    </div>
+
+    <!-- Special Feature: Activity Log Modal -->
+    <div id="activity-log-modal" class="modal-overlay">
+        <div class="modal-content">
+            <i class="fas fa-clipboard-list"></i>
+            <h2>Activity Log</h2>
+            <p>See your recent actions and rewards!</p>
+            <ul id="activity-log-list" style="text-align:left; margin:20px 0; padding:0; list-style:none;"></ul>
+            <button id="close-activity-log-btn" class="video-controls button" style="background:#dc3545; color:#fff; margin-top:10px;">Close</button>
+        </div>
+    </div>
+
+    <!-- Special Feature: Daily Fun Fact Modal -->
+    <div id="fun-fact-modal" class="modal-overlay">
+        <div class="modal-content">
+            <i class="fas fa-lightbulb"></i>
+            <h2>Daily Fun Fact</h2>
+            <p id="fun-fact-text" style="margin:20px 0;"></p>
+            <button id="close-fun-fact-btn" class="video-controls button" style="background:#dc3545; color:#fff; margin-top:10px;">Close</button>
+        </div>
+    </div>
+
+    <!-- 1. The <iframe> (and video player) will be created automatically by the YouTube API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script>
+        // Global variables
+        let player;
+        let watchTimer;
+        let progressInterval;
+        let watchStartTime;
+        let rewardGivenForCurrentVideo = false;
+        const REWARD_AMOUNT = 0.50;
+        const REQUIRED_WATCH_TIME = 15000; // 15 seconds in milliseconds
+        const DAILY_BONUS_AMOUNT = 0.10;
+        const TWENTY_FOUR_HOURS_IN_MS = 24 * 60 * 60 * 1000;
+
+        // DOM Elements
+        const playlistItems = document.querySelectorAll('.playlist-item');
+        const videoTitle = document.getElementById('video-title');
+        const nextVideoButton = document.getElementById('next-video-btn');
+        const balanceElement = document.getElementById('balance-amount');
+        const videosWatchedElement = document.getElementById('videos-watched-count');
+        const progressBarContainer = document.querySelector('.progress-bar-container');
+        const progressBar = document.querySelector('.progress-bar');
+        // New elements for notifications
+        const notificationBell = document.getElementById('notification-bell');
+        const notificationCount = document.getElementById('notification-count');
+        const notificationPanel = document.getElementById('notification-panel');
+        const notificationList = document.getElementById('notification-list');
+        const themeToggleButton = document.getElementById('theme-toggle-btn');
+        const moonIcon = themeToggleButton.querySelector('.fa-moon');
+        const sunIcon = themeToggleButton.querySelector('.fa-sun');
+        // Daily Bonus elements
+        const dailyBonusModal = document.getElementById('daily-bonus-modal');
+        const claimBonusBtn = document.getElementById('claim-bonus-btn');
+
+        // Activity Log elements
+        const activityLogModal = document.getElementById('activity-log-modal');
+        const activityLogList = document.getElementById('activity-log-list');
+        const closeActivityLogBtn = document.getElementById('close-activity-log-btn');
+
+        // Fun Fact elements
+        const funFactModal = document.getElementById('fun-fact-modal');
+        const funFactText = document.getElementById('fun-fact-text');
+        const closeFunFactBtn = document.getElementById('close-fun-fact-btn');
+
+        // --- Special Feature: Daily Fun Fact Modal Button Logic ---
+        function checkForFunFact() {
+            if (!document.getElementById('fun-fact-header-btn')) {
+                const headerControls = document.querySelector('.header-controls');
+                const funFactHeaderBtn = document.createElement('button');
+                funFactHeaderBtn.id = 'fun-fact-header-btn';
+                funFactHeaderBtn.className = 'theme-toggle-button';
+                funFactHeaderBtn.innerHTML = '<i class="fas fa-lightbulb"></i>';
+                funFactHeaderBtn.title = 'Show Daily Fun Fact';
+                funFactHeaderBtn.onclick = () => {
+                    showFunFact();
+                    funFactModal.classList.add('show');
+                };
+                headerControls.appendChild(funFactHeaderBtn);
+            }
+        }
+
+        function showFunFact() {
+            // List of fun facts
+            const facts = [
+                "Honey never spoils. Archaeologists have found edible honey in ancient tombs!",
+                "Bananas are berries, but strawberries aren't.",
+                "A group of flamingos is called a 'flamboyance'.",
+                "Octopuses have three hearts.",
+                "The Eiffel Tower can be 15 cm taller during hot days.",
+                "Wombat poop is cube-shaped.",
+                "There are more stars in the universe than grains of sand on Earth.",
+                "Some turtles can breathe through their butts!"
+            ];
+            // Use localStorage to show a new fact each day
+            const today = new Date().toISOString().slice(0,10);
+            let stored = JSON.parse(localStorage.getItem('dailyFunFact') || '{}');
+            if (stored.date !== today) {
+                // Pick a random fact for today
+                const fact = facts[Math.floor(Math.random() * facts.length)];
+                stored = { date: today, fact };
+                localStorage.setItem('dailyFunFact', JSON.stringify(stored));
+            }
+            funFactText.textContent = stored.fact;
+        }
+
+        if (closeFunFactBtn) {
+            closeFunFactBtn.addEventListener('click', function() {
+                funFactModal.classList.remove('show');
+            });
+        }
+
+        // --- Special Feature: Activity Log Modal Button Logic ---
+        function checkForActivityLog() {
+            if (!document.getElementById('activity-log-header-btn')) {
+                const headerControls = document.querySelector('.header-controls');
+                const activityLogHeaderBtn = document.createElement('button');
+                activityLogHeaderBtn.id = 'activity-log-header-btn';
+                activityLogHeaderBtn.className = 'theme-toggle-button';
+                activityLogHeaderBtn.innerHTML = '<i class="fas fa-clipboard-list"></i>';
+                activityLogHeaderBtn.title = 'View Activity Log';
+                activityLogHeaderBtn.onclick = () => {
+                    showActivityLog();
+                    activityLogModal.classList.add('show');
+                };
+                headerControls.appendChild(activityLogHeaderBtn);
+            }
+        }
+
+        function showActivityLog() {
+            activityLogList.innerHTML = '';
+            let user = JSON.parse(sessionStorage.getItem('loggedInUser'));
+            let log = user && user.activityLog ? user.activityLog.slice().reverse() : [];
+            if (log.length === 0) {
+                activityLogList.innerHTML = '<li>No activity yet.</li>';
+            } else {
+                log.slice(0, 10).forEach(entry => {
+                    const li = document.createElement('li');
+                    li.style.padding = '8px 0';
+                    li.innerHTML = `<strong>${entry.date}</strong>: <span style='color:#2575fc;'>${entry.action}</span>`;
+                    activityLogList.appendChild(li);
+                });
+            }
+        }
+
+        if (closeActivityLogBtn) {
+            closeActivityLogBtn.addEventListener('click', function() {
+                activityLogModal.classList.remove('show');
+            });
+        }
+
+        // Lucky Spin elements
+        const luckySpinModal = document.getElementById('lucky-spin-modal');
+        const spinBtn = document.getElementById('spin-btn');
+        const closeSpinBtn = document.getElementById('close-spin-btn');
+        const spinWheel = document.getElementById('spin-wheel');
+        const spinResult = document.getElementById('spin-result');
+
+        // Leaderboard elements
+        const leaderboardModal = document.getElementById('leaderboard-modal');
+        const leaderboardList = document.getElementById('leaderboard-list');
+        const closeLeaderboardBtn = document.getElementById('close-leaderboard-btn');
+
+        // --- New XP Bar Update Function ---
+        function updateXpBar() {
+            const user = JSON.parse(sessionStorage.getItem('loggedInUser'));
+            if (!user) return;
+
+            const videosWatched = user.videosWatchedCount || 0;
+            const XP_MILESTONE = 50;
+            
+            let progress = videosWatched % XP_MILESTONE;
+            
+            // If a milestone was just hit (e.g., 50, 100), show the bar as full.
+            if (videosWatched > 0 && progress === 0) {
+                progress = XP_MILESTONE;
+            }
+            
+            const percentage = (progress / XP_MILESTONE) * 100;
+
+            document.getElementById('xp-bar').style.width = `${percentage}%`;
+            document.getElementById('xp-progress-text').textContent = `${progress} / ${XP_MILESTONE} Videos`;
+        }
+
+
+        // --- Helper Functions ---
+        function resetProgress() {
+            clearTimeout(watchTimer);
+            clearInterval(progressInterval);
+            progressBar.style.width = '0%';
+            progressBarContainer.style.display = 'none';
+        }
+
+        // Helper function to get all user data from localStorage
+        function getAllUsers() {
+            return JSON.parse(atob(localStorage.getItem('users_encrypted') || btoa('[]')));
+        }
+
+        // --- Special Feature: Watched Video Timer Modal ---
+        let watchedTimerInterval = null;
+        function showWatchedTimerModal(timeLeftMs) {
+            // Create modal if not exists
+            let modal = document.getElementById('watched-timer-modal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'watched-timer-modal';
+                modal.className = 'modal-overlay';
+                modal.innerHTML = `<div class="modal-content"><i class='fas fa-clock' style='font-size:40px;color:#ffc107;'></i><h2>Video Locked</h2><p id='watched-timer-text' style='font-size:18px;margin:20px 0;'></p><button id='close-watched-timer-btn' class='video-controls button' style='background:#dc3545;color:#fff;margin-top:10px;'>Close</button></div>`;
+                document.body.appendChild(modal);
+            }
+            modal.classList.add('show');
+            const timerText = modal.querySelector('#watched-timer-text');
+            const closeBtn = modal.querySelector('#close-watched-timer-btn');
+            function formatMs(ms) {
+                let sec = Math.floor(ms/1000)%60;
+                let min = Math.floor(ms/60000)%60;
+                let hr = Math.floor(ms/3600000);
+                return `${hr.toString().padStart(2,'0')}:${min.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
+            }
+            function updateTimer() {
+                if (timeLeftMs <= 0) {
+                    clearInterval(watchedTimerInterval);
+                    modal.classList.remove('show');
+                    location.reload(); // Refresh page for new videos
+                    return;
+                }
+                timerText.textContent = `You can watch this video again in ${formatMs(timeLeftMs)}.`;
+                timeLeftMs -= 1000;
+            }
+            updateTimer();
+            clearInterval(watchedTimerInterval);
+            watchedTimerInterval = setInterval(updateTimer, 1000);
+            closeBtn.onclick = function() {
+                clearInterval(watchedTimerInterval);
+                modal.classList.remove('show');
+            };
+        }
+
+        // Helper function to save all user data to localStorage
+        function saveAllUsers(users) {
+            localStorage.setItem('users_encrypted', btoa(JSON.stringify(users)));
+        }
+
+        // Helper function to save the current user's progress from the session back to the main user list
+        function saveCurrentUserProgress() {
+            const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
+            if (!loggedInUser) return;
+
+            let allUsers = getAllUsers();
+            const userIndex = allUsers.findIndex(u => u.email === loggedInUser.email);
+            if (userIndex !== -1) {
+                allUsers[userIndex] = loggedInUser; // Update the user with the latest progress
+                saveAllUsers(allUsers);
+            }
+        }
+
+        // --- Page Initialization ---
+        document.addEventListener('DOMContentLoaded', function() {
+            const user = JSON.parse(sessionStorage.getItem('loggedInUser'));
+            if (user) {
+                document.getElementById('welcome-message').textContent = `Welcome Back, ${user.fullname}!`;
+                loadNotifications(); // Load notifications for the user
+                checkForDailyBonus(); // Check for daily bonus on page load
+                checkForLuckySpin(); // Check for lucky spin eligibility
+                checkForLeaderboard(); // Show leaderboard button if eligible
+                checkForActivityLog(); // Show activity log button
+                checkForFunFact(); // Show fun fact button
+            }
+
+            // Apply theme on page load
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                setTheme(savedTheme === 'dark');
+            }
+        });
+
+        // --- Special Feature: Toast Notification ---
+        function showToast(message) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            container.appendChild(toast);
+
+            setTimeout(() => toast.classList.add('show'), 100);
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+                toast.addEventListener('transitionend', () => toast.remove());
+            }, 4000);
+        }
+
+
+        // --- Theme Switcher Logic ---
+        function setTheme(isDark) {
+            if (isDark) {
+                document.body.classList.add('dark-mode');
+                moonIcon.style.display = 'none';
+                sunIcon.style.display = 'inline-block';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.body.classList.remove('dark-mode');
+                sunIcon.style.display = 'none';
+                moonIcon.style.display = 'inline-block';
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        themeToggleButton.addEventListener('click', () => {
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            setTheme(!isDarkMode);
+        });
+
+
+        // --- Special Feature: Notifications ---
+        function loadNotifications() {
+            const user = JSON.parse(sessionStorage.getItem('loggedInUser'));
+            const notifications = user.notifications || [];
+            const unreadNotifications = notifications.filter(n => !n.read);
+
+            notificationList.innerHTML = ''; // Clear current list
+
+            if (unreadNotifications.length > 0) {
+                notificationCount.textContent = unreadNotifications.length;
+                notificationCount.style.display = 'block';
+            } else {
+                notificationCount.style.display = 'none';
+            }
+
+            if (notifications.length > 0) {
+                // Display all notifications, newest first
+                notifications.slice().reverse().forEach(n => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = n.message;
+                    notificationList.appendChild(listItem);
+                });
+            } else {
+                notificationList.innerHTML = '<li>No notifications yet.</li>';
+            }
+        }
+
+        notificationBell.addEventListener('click', () => {
+            notificationPanel.classList.toggle('show');
+            
+            // If panel is opened, mark notifications as read
+            if (notificationPanel.classList.contains('show') && notificationCount.style.display !== 'none') {
+                let user = JSON.parse(sessionStorage.getItem('loggedInUser'));
+                if (user && user.notifications) {
+                    user.notifications.forEach(n => n.read = true);
+                    sessionStorage.setItem('loggedInUser', JSON.stringify(user));
+                    notificationCount.style.display = 'none'; // Hide count immediately
+                }
+            }
+        });
+
+        // Close notification panel if clicking outside
+        window.addEventListener('click', function(e) {
+            if (!notificationBell.contains(e.target) && !notificationPanel.contains(e.target)) {
+                notificationPanel.classList.remove('show');
+            }
+        });
+
+        // --- Special Feature: Daily Bonus Logic ---
+        function checkForDailyBonus() {
+            let user = JSON.parse(sessionStorage.getItem('loggedInUser'));
+            const lastClaim = user.lastBonusClaimedTimestamp;
+
+            if (!lastClaim || (Date.now() - lastClaim > TWENTY_FOUR_HOURS_IN_MS)) {
+                // User is eligible for a bonus
+                dailyBonusModal.classList.add('show');
+            }
+        }
+
+        // --- Special Feature: Lucky Spin Logic ---
+        function checkForLuckySpin() {
+            let user = JSON.parse(sessionStorage.getItem('loggedInUser'));
+            const lastSpin = user.lastLuckySpinTimestamp;
+            if (!lastSpin || (Date.now() - lastSpin > TWENTY_FOUR_HOURS_IN_MS)) {
+                // Show a button in the header to open the spin modal
+                if (!document.getElementById('lucky-spin-header-btn')) {
+                    const headerControls = document.querySelector('.header-controls');
+                    const spinHeaderBtn = document.createElement('button');
+                    spinHeaderBtn.id = 'lucky-spin-header-btn';
+                    spinHeaderBtn.className = 'theme-toggle-button';
+                    spinHeaderBtn.innerHTML = '<i class="fas fa-dice"></i>';
+                    spinHeaderBtn.title = 'Try your Lucky Spin!';
+                    spinHeaderBtn.onclick = () => luckySpinModal.classList.add('show');
+                    headerControls.appendChild(spinHeaderBtn);
+                }
+            }
+        }
+
+        // --- Special Feature: Referral Leaderboard Logic ---
+        function checkForLeaderboard() {
+            if (!document.getElementById('leaderboard-header-btn')) {
+                const headerControls = document.querySelector('.header-controls');
+                const leaderboardHeaderBtn = document.createElement('button');
+                leaderboardHeaderBtn.id = 'leaderboard-header-btn';
+                leaderboardHeaderBtn.className = 'theme-toggle-button';
+                leaderboardHeaderBtn.innerHTML = '<i class="fas fa-trophy"></i>';
+                leaderboardHeaderBtn.title = 'View Referral Leaderboard';
+                leaderboardHeaderBtn.onclick = () => {
+                    showLeaderboard();
+                    leaderboardModal.classList.add('show');
+                };
+                headerControls.appendChild(leaderboardHeaderBtn);
+            }
+        }
+
+        function showLeaderboard() {
+            leaderboardList.innerHTML = '';
+            let allUsers = [];
+            try {
+                allUsers = getAllUsers();
+            } catch (e) {}
+            if (!Array.isArray(allUsers)) allUsers = [];
+            // Sort users by referrals
+            allUsers.sort((a, b) => (b.referredUsers ? b.referredUsers.length : 0) - (a.referredUsers ? a.referredUsers.length : 0));
+            // Show top 5
+            allUsers.slice(0, 5).forEach((u, idx) => {
+                const li = document.createElement('li');
+                li.style.padding = '8px 0';
+                li.innerHTML = `<strong>#${idx+1} ${u.fullname || u.email}</strong> - <span style='color:#28a745;'>${(u.referredUsers ? u.referredUsers.length : 0)} referrals</span>`;
+                leaderboardList.appendChild(li);
+            });
+            if (leaderboardList.innerHTML === '') {
+                leaderboardList.innerHTML = '<li>No referral data yet.</li>';
+            }
+        }
+
+        closeLeaderboardBtn.addEventListener('click', function() {
+            leaderboardModal.classList.remove('show');
+        });
+
+        spinBtn.addEventListener('click', function() {
+            let user = JSON.parse(sessionStorage.getItem('loggedInUser'));
+            if (user.lastLuckySpinTimestamp && (Date.now() - user.lastLuckySpinTimestamp < TWENTY_FOUR_HOURS_IN_MS)) {
+                showToast('You already spun today! Try again tomorrow.');
+                return;
+            }
+            // Spin animation
+            spinWheel.style.transform = 'rotate(0deg)';
+            spinResult.textContent = '';
+            const degrees = Math.floor(Math.random() * 360) + 720; // 2+ full spins
+            spinWheel.style.transition = 'transform 2s cubic-bezier(.17,.67,.83,.67)';
+            spinWheel.style.transform = `rotate(${degrees}deg)`;
+            // Possible rewards
+            const rewards = [0.05, 0.10, 0.20, 0.50];
+            setTimeout(() => {
+                const idx = Math.floor(((degrees % 360) / 90)) % 4;
+                const reward = rewards[idx];
+                spinResult.textContent = `$${reward.toFixed(2)}`;
+                user.balance = (user.balance || 0) + reward;
+                user.lastLuckySpinTimestamp = Date.now();
+                if (!user.activityLog) user.activityLog = [];
+                user.activityLog.push({ date: new Date().toLocaleString(), action: `Lucky Spin: Won $${reward.toFixed(2)}` });
+                sessionStorage.setItem('loggedInUser', JSON.stringify(user));
+                loadUserStats();
+                showToast(`Congrats! You won $${reward.toFixed(2)} from Lucky Spin!`);
+                checkForLuckySpin(); // Remove button after spin
+            }, 2100);
+        });
+
+        closeSpinBtn.addEventListener('click', function() {
+            luckySpinModal.classList.remove('show');
+            spinWheel.style.transform = 'rotate(0deg)';
+            spinResult.textContent = '';
+        });
+
+        claimBonusBtn.addEventListener('click', () => {
+            let user = JSON.parse(sessionStorage.getItem('loggedInUser'));
+
+            // Add bonus and update timestamp
+            user.balance = (user.balance || 0) + DAILY_BONUS_AMOUNT;
+            user.lastBonusClaimedTimestamp = Date.now();
+            if (!user.activityLog) user.activityLog = [];
+            user.activityLog.push({ date: new Date().toLocaleString(), action: `Claimed daily bonus: $${DAILY_BONUS_AMOUNT.toFixed(2)}` });
+
+            // Save data
+            sessionStorage.setItem('loggedInUser', JSON.stringify(user));
+
+            // Update UI
+            dailyBonusModal.classList.remove('show');
+            loadUserStats();
+            showToast(`Bonus of $${DAILY_BONUS_AMOUNT.toFixed(2)} claimed!`);
+        });
+
+        // --- Main Functions ---
+
+        // 1. This function is called when the YouTube API is ready.
+        function onYouTubeIframeAPIReady() {
+            const initialVideoId = document.querySelector('.playlist-item.active').getAttribute('data-video-id');
+            player = new YT.Player('player', {
+                height: '100%',
+                width: '100%',
+                videoId: initialVideoId,
+                playerVars: { 'playsinline': 1 },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        // New function to load user stats from localStorage
+        function loadUserStats() {
+            const user = JSON.parse(sessionStorage.getItem('loggedInUser'));
+            if (!user) return;
+
+            balanceElement.textContent = '$' + (user.balance || 0).toFixed(2);
+            videosWatchedElement.textContent = user.videosWatchedCount || 0;
+            document.getElementById('referrals-count').textContent = (user.referredUsers || []).length;
+            // --- Level & Grade Card Update ---
+            const level = user.level || 1;
+            let grade = 'Bronze';
+            let iconColor = '#cd7f32';
+            if (level >= 4) { grade = 'Platinum'; iconColor = '#e5e4e2'; }
+            else if (level === 3) { grade = 'Gold'; iconColor = '#ffd700'; }
+            else if (level === 2) { grade = 'Silver'; iconColor = '#c0c0c0'; }
+            document.getElementById('level-grade').textContent = `${grade} (Lv. ${level})`;
+            const gradeIcon = document.getElementById('grade-icon');
+            if (gradeIcon) gradeIcon.style.color = iconColor;
+            updateXpBar(); // Update the XP bar on page load
+            updateDailyChallengeCard();
+        }
+
+        // 2. The API calls this function when the video player is ready.
+        function onPlayerReady(event) {
+            loadUserStats(); // Load stats from localStorage
+            updatePlaylistStatus();
+        }
+
+        // 3. The API calls this function when the video player's state changes.
+        function onPlayerStateChange(event) {
+            const activeItem = document.querySelector('.playlist-item.active');
+            // If video is playing, and not already watched, start the 5-second timer
+            if (event.data == YT.PlayerState.PLAYING && !rewardGivenForCurrentVideo && !activeItem.classList.contains('watched')) {
+                resetProgress(); // Clear any previous timers before starting new ones
+                watchStartTime = Date.now();
+                progressBarContainer.style.display = 'block';
+
+                watchTimer = setTimeout(enableClaimButton, REQUIRED_WATCH_TIME);
+
+                progressInterval = setInterval(() => {
+                    const elapsedTime = Date.now() - watchStartTime;
+                    const progressPercentage = Math.min((elapsedTime / REQUIRED_WATCH_TIME) * 100, 100);
+                    progressBar.style.width = progressPercentage + '%';
+                }, 50); // Update 20 times a second
+
+            } 
+            // If video is paused, stopped, or seeking, cancel the timer
+            else {
+                resetProgress();
+            }
+        }
+
+        // 4. This function is called after 15 seconds to enable the claim button
+        function enableClaimButton() {
+            if (!rewardGivenForCurrentVideo) {
+                clearInterval(progressInterval); // Stop the progress bar animation
+                progressBar.style.width = '100%'; // Make sure it's full
+                nextVideoButton.disabled = false; // Enable the "Claim Reward" button
+            }
+        }
+
+        // This function is called when the user clicks "Claim Reward"
+        function grantReward() {
+            if (!rewardGivenForCurrentVideo) {
+                rewardGivenForCurrentVideo = true;
+                let user = JSON.parse(sessionStorage.getItem('loggedInUser'));
+                
+                user.balance = (user.balance || 0) + REWARD_AMOUNT;
+                user.videosWatchedCount = (user.videosWatchedCount || 0) + 1;
+
+                // --- New 5-Video Bonus System ---
+                const VIDEO_MILESTONE = 5;
+                const MILESTONE_BONUS = 0.20;
+                if (user.videosWatchedCount > 0 && user.videosWatchedCount % VIDEO_MILESTONE === 0) {
+                    user.balance += MILESTONE_BONUS;
+                    user.level = (user.level || 1) + 1; // "upgrade" part
+
+                    const bonusMessage = `Bonus! You've watched ${user.videosWatchedCount} videos and earned an extra $${MILESTONE_BONUS.toFixed(2)}!`;
+
+                    // Add a notification for the user
+                    if (!user.notifications) user.notifications = [];
+                    user.notifications.push({ message: bonusMessage, read: false });
+                    loadNotifications(); // Refresh notification UI immediately
+
+                    // Add to activity log
+                    user.activityLog.push({ date: new Date().toLocaleString(), action: `Video milestone bonus: $${MILESTONE_BONUS.toFixed(2)}` });
+
+                    // Show a toast notification
+                    showToast(bonusMessage);
+                }
+                // --- End 5-Video Bonus System ---
+
+                // --- New 50-Video XP Bonus System ---
+                const XP_MILESTONE = 50;
+                const XP_BONUS = 1.00;
+                if (user.videosWatchedCount > 0 && user.videosWatchedCount % XP_MILESTONE === 0) {
+                    user.balance += XP_BONUS;
+                    
+                    const xpBonusMessage = `XP LEVEL UP! You've watched ${user.videosWatchedCount} videos and earned a $${XP_BONUS.toFixed(2)} bonus!`;
+
+                    // Add notification
+                    if (!user.notifications) user.notifications = [];
+                    user.notifications.push({ message: xpBonusMessage, read: false });
+                    loadNotifications();
+
+                    // Add to activity log
+                    user.activityLog.push({ date: new Date().toLocaleString(), action: `XP bonus: $${XP_BONUS.toFixed(2)}` });
+
+                    // Show toast
+                    showToast(xpBonusMessage);
+                }
+                // --- End 50-Video XP Bonus System ---
+
+                // --- Daily Challenge Progress ---
+                incrementDailyChallenge('watch'); // This already adds one video to Daily Challenge
+
+                const videoId = player.getVideoData()['video_id'];
+                if (!user.watchedVideos) user.watchedVideos = {};
+                user.watchedVideos[videoId] = Date.now();
+                if (!user.activityLog) user.activityLog = [];
+                user.activityLog.push({ date: new Date().toLocaleString(), action: `Earned reward: $${REWARD_AMOUNT.toFixed(2)}` });
+                sessionStorage.setItem('loggedInUser', JSON.stringify(user));
+
+                // Update the button to become "Next Video"
+                nextVideoButton.textContent = 'Next Video';
+
+                // Update the UI immediately
+                loadUserStats();
+                // Update the UI to show it's watched
+                updatePlaylistStatus();
+            }
+        }
+
+        // 5. Checks localStorage and updates the playlist UI
+        function updatePlaylistStatus() {
+            const user = JSON.parse(sessionStorage.getItem('loggedInUser'));
+            let watchedVideos = user ? user.watchedVideos || {} : {};
+
+            playlistItems.forEach(item => {
+                const videoId = item.getAttribute('data-video-id');
+                if (watchedVideos[videoId]) {
+                    const timeSinceWatched = Date.now() - watchedVideos[videoId];
+                    if (timeSinceWatched < TWENTY_FOUR_HOURS_IN_MS) {
+                        item.classList.add('watched');
+                    } else {
+                        // 24 hours have passed, so it's eligible again
+                        item.classList.remove('watched');
+                        delete user.watchedVideos[videoId]; // Clean up old entry
+                    }
+                }
+            });
+
+            // Save the potentially cleaned-up user object back to session
+            if (user) {
+                sessionStorage.setItem('loggedInUser', JSON.stringify(user));
+            }
+        }
+
+        // 6. Playlist click handler
+        playlistItems.forEach(item => {
+            item.addEventListener('click', function() {
+                // If already watched within 24h, show an alert and do nothing
+                if (this.classList.contains('watched')) {
+                    let user = JSON.parse(sessionStorage.getItem('loggedInUser'));
+                    const videoId = this.getAttribute('data-video-id');
+                    const watchedTime = user && user.watchedVideos ? user.watchedVideos[videoId] : null;
+                    if (watchedTime) {
+                        const timePassed = Date.now() - watchedTime;
+                        const timeLeft = TWENTY_FOUR_HOURS_IN_MS - timePassed;
+                        if (timeLeft > 0) {
+                            showWatchedTimerModal(timeLeft);
+                            return;
+                        }
+                    }
+                }
+
+                // Reset state for the new video
+                resetProgress();
+                rewardGivenForCurrentVideo = false;
+                nextVideoButton.disabled = true;
+                nextVideoButton.textContent = 'Claim Reward';
+
+                // Update active item in playlist
+                playlistItems.forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+
+                // Load new video
+                const videoId = this.getAttribute('data-video-id');
+                const newTitle = this.getAttribute('data-video-title');
+                player.loadVideoById(videoId);
+                videoTitle.textContent = `Watch: ${newTitle}`;
+            });
+        });
+
+        // 7. Button functionality (Claim Reward / Next Video)
+        nextVideoButton.addEventListener('click', function() {
+            if (this.textContent === 'Claim Reward') {
+                // User has watched for 15s and is now claiming the reward.
+                grantReward();
+            } else if (this.textContent === 'Next Video') {
+                // User has claimed the reward and wants the next video.
+                const allVideos = document.querySelectorAll('.playlist-item');
+                const currentActive = document.querySelector('.playlist-item.active');
+                const currentIndex = Array.from(allVideos).indexOf(currentActive);
+
+                let nextVideoFound = false;
+                // Start searching from the video after the current one
+                for (let i = currentIndex + 1; i < allVideos.length; i++) {
+                    if (!allVideos[i].classList.contains('watched')) {
+                        allVideos[i].click(); // Simulate a click to play the next available video
+                        nextVideoFound = true;
+                        break;
+                    }
+                }
+
+                // If no unwatched video is found after the current one, check from the beginning
+                if (!nextVideoFound) {
+                    for (let i = 0; i < currentIndex; i++) {
+                        if (!allVideos[i].classList.contains('watched')) {
+                            allVideos[i].click();
+                            nextVideoFound = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!nextVideoFound) {
+                    alert('You have watched all available videos for now. Check back later!');
+                }
+            }
+        });
+
+        // 8. Logout button functionality
+        document.getElementById('logout-link').addEventListener('click', function(event) {
+            event.preventDefault();
+            saveCurrentUserProgress(); // Save final progress to main storage
+            sessionStorage.removeItem('loggedInUser'); // End the session
+            localStorage.removeItem('rememberedUser'); // Ensure "Remember Me" is cleared on logout
+            window.location.href = 'login.html';
+        });
+
+        // --- Daily Challenge Logic ---
+        const DAILY_CHALLENGE_KEY = 'dailyChallenge';
+        const DAILY_CHALLENGE_BONUS = 0.15;
+        const dailyChallengeText = document.getElementById('daily-challenge-text');
+        const dailyChallengeProgress = document.getElementById('daily-challenge-progress');
+
+        function getTodayStr() {
+            return new Date().toISOString().slice(0,10);
+        }
+
+        function getRandomChallenge() {
+            const challenges = [
+                { type: 'watch', count: 3, text: 'Watch 3 videos in a row today' },
+                { type: 'refer', count: 1, text: 'Refer a friend today' },
+                { type: 'claim', count: 5, text: 'Claim all 5 video rewards today' }
+            ];
+            return challenges[Math.floor(Math.random() * challenges.length)];
+        }
+
+        function getDailyChallenge() {
+            let stored = JSON.parse(localStorage.getItem(DAILY_CHALLENGE_KEY) || '{}');
+            if (stored.date !== getTodayStr()) {
+                stored = { date: getTodayStr(), challenge: getRandomChallenge(), progress: 0, completed: false };
+                localStorage.setItem(DAILY_CHALLENGE_KEY, JSON.stringify(stored));
+            }
+            return stored;
+        }
+
+        function updateDailyChallengeCard() {
+            const user = JSON.parse(sessionStorage.getItem('loggedInUser'));
+            const challengeData = getDailyChallenge();
+            let progress = challengeData.progress || 0;
+            let completed = challengeData.completed;
+            let challenge = challengeData.challenge;
+            if (!challenge) {
+                dailyChallengeText.textContent = 'No challenge today.';
+                dailyChallengeProgress.textContent = '';
+                return;
+            }
+            dailyChallengeText.textContent = challenge.text;
+            dailyChallengeProgress.textContent = completed ? 'Completed! Bonus awarded.' : `Progress: ${progress} / ${challenge.count}`;
+        }
+
+        // Call this when user completes a challenge step
+        function incrementDailyChallenge(type) {
+            let challengeData = getDailyChallenge();
+            if (challengeData.completed) return;
+            if (challengeData.challenge.type !== type) return;
+            challengeData.progress = (challengeData.progress || 0) + 1;
+            if (challengeData.progress >= challengeData.challenge.count) {
+                challengeData.completed = true;
+                // Award bonus
+                let user = JSON.parse(sessionStorage.getItem('loggedInUser'));
+                user.balance = (user.balance || 0) + DAILY_CHALLENGE_BONUS;
+                if (!user.activityLog) user.activityLog = [];
+                user.activityLog.push({ date: new Date().toLocaleString(), action: `Completed daily challenge: +$${DAILY_CHALLENGE_BONUS.toFixed(2)}` });
+                if (!user.notifications) user.notifications = [];
+                user.notifications.push({ message: `Daily Challenge completed! You earned $${DAILY_CHALLENGE_BONUS.toFixed(2)}.`, read: false });
+                sessionStorage.setItem('loggedInUser', JSON.stringify(user));
+                showToast(`Daily Challenge completed! +$${DAILY_CHALLENGE_BONUS.toFixed(2)}`);
+                loadNotifications();
+            }
+            localStorage.setItem(DAILY_CHALLENGE_KEY, JSON.stringify(challengeData));
+            updateDailyChallengeCard();
+        }
+
+        // --- Call updateDailyChallengeCard in loadUserStats
+        document.addEventListener('DOMContentLoaded', function() {
+            const user = JSON.parse(sessionStorage.getItem('loggedInUser'));
+            if (user) {
+                document.getElementById('welcome-message').textContent = `Welcome Back, ${user.fullname}!`;
+                loadNotifications(); // Load notifications for the user
+                checkForDailyBonus(); // Check for daily bonus on page load
+                checkForLuckySpin(); // Check for lucky spin eligibility
+                checkForLeaderboard(); // Show leaderboard button if eligible
+                checkForActivityLog(); // Show activity log button
+                checkForFunFact(); // Show fun fact button
+            }
+
+            // Apply theme on page load
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                setTheme(savedTheme === 'dark');
+            }
+
+            updateDailyChallengeCard();
+        });
+    </script>
+    <!-- Google AdSense Banner -->
+    <div id="adsense-banner" style="position:fixed;bottom:0;left:0;width:100%;background:#fff;box-shadow:0 -2px 8px rgba(0,0,0,0.06);z-index:2000;text-align:center;padding:2px 0;">
+        <!-- Replace the data-ad-client and data-ad-slot with your own AdSense values -->
+        <ins class="adsbygoogle"
+             style="display:inline-block;width:320px;height:50px;"
+             data-ad-client="ca-app-pub-4896370371108956/6733565704"
+             data-ad-slot="1234567890"></ins>
+        <script>
+            (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+    </div>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+</body>
+</html>

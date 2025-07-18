@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --sidebar-bg: #ffffff;
+            --content-bg: #ffffff;
+            --text-color: #333;
+            --text-muted: #666;
+            --border-color: #eee;
+            --primary-color: #6a11cb;
+            --hover-bg: #f0f2f5;
+        }
+        body.dark-mode {
+            --bg-color: #121212;
+            --sidebar-bg: #1e1e1e;
+            --content-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --text-muted: #a0a0a0;
+            --border-color: #333;
+            --hover-bg: #333;
+        }
+        body, html { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; background-color: var(--bg-color); color: var(--text-color); }
+        .dashboard-container { display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background: var(--sidebar-bg); box-shadow: 2px 0 5px rgba(0,0,0,0.1); color: var(--text-color); display: flex; flex-direction: column; padding: 20px; border-right: 1px solid var(--border-color); }
+        .sidebar-header { font-size: 24px; font-weight: 600; padding-bottom: 20px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); color: #6a11cb; }
+        .sidebar-nav { list-style: none; padding: 0; margin: 0; }
+        .sidebar-nav li a { display: flex; align-items: center; padding: 15px 10px; color: var(--text-muted); text-decoration: none; border-radius: 8px; margin-bottom: 5px; transition: background-color 0.3s, color 0.3s; }
+        .sidebar-nav li a i { margin-right: 15px; width: 20px; text-align: center; }
+        .sidebar-nav li a:hover, .sidebar-nav li a.active { background-color: #6a11cb; color: #fff; }
+        .main-content { flex-grow: 1; padding: 30px; }
+        .main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .main-header h1 { margin: 0; font-size: 28px; font-weight: 600; }
+        .content-box { background: var(--content-bg); padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        
+        /* --- Special Feature: Admin Analytics --- */
+        .stats-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .card { background: var(--content-bg); padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; align-items: center; }
+        .card i { font-size: 28px; padding: 15px; border-radius: 50%; margin-right: 20px; }
+        .card .fa-users { background-color: #e8eaf6; color: #303f9f; }
+        .card .fa-dollar-sign { background-color: #e0f7fa; color: #00796b; }
+        .card .fa-hand-holding-usd { background-color: #fbe9e7; color: #d84315; }
+        .card .fa-chart-pie { background-color: #fff3e0; color: #f57c00; }
+        .card-info h3 { margin: 0 0 5px 0; font-size: 16px; color: var(--text-muted); }
+        .card-info p { margin: 0; font-size: 24px; font-weight: 600; color: var(--text-color); }
+        .charts-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; }
+        @media (max-width: 992px) { .charts-grid { grid-template-columns: 1fr; } }
+        /* --- End Special Feature --- */
+
+        .user-table { width: 100%; border-collapse: collapse; }
+        .user-table th, .user-table td { text-align: left; padding: 12px 15px; border-bottom: 1px solid var(--border-color); }
+        .user-table th { background-color: var(--hover-bg); font-weight: 600; }
+        .action-btn { background: none; border: none; cursor: pointer; font-size: 16px; margin: 0 5px; }
+        .edit-btn { color: #007bff; }
+        .notify-btn { color: #17a2b8; }
+        .ban-btn { color: #ffc107; }
+        .unban-btn { color: #28a745; }
+        .delete-btn { color: #dc3545; }
+        .banned-user { opacity: 0.5; text-decoration: line-through; }
+        .banned-user .action-btn { text-decoration: none; } /* Keep buttons normal */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); }
+        .modal-content { background-color: var(--content-bg); margin: 15% auto; padding: 20px; border: 1px solid var(--border-color); width: 80%; max-width: 500px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .close-button { color: var(--text-muted); float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; margin-bottom: 8px; font-weight: 500; }
+        .input-group input { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .action-button { width: 100%; padding: 15px; border: none; border-radius: 8px; background: #007bff; color: white; font-size: 18px; font-weight: 600; cursor: pointer; }
+        .user-management-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .user-management-controls input { flex-grow: 1; padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--bg-color); color: var(--text-color); }
+        .user-management-controls .action-button { width: auto; font-size: 14px; padding: 10px 20px; }
+        .create-btn { background-color: #28a745; }
+        .broadcast-btn { background-color: #17a2b8; }
+    </style>
+</head>
+<body>
+    <script>
+        // Page protection script
+        const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
+        if (!loggedInUser || loggedInUser.email !== 'admin@example.com') {
+            alert('Access Denied: You do not have administrator privileges.');
+            window.location.href = 'login.html';
+        }
+    </script>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">Admin Panel</div>
+            <div style="margin:12px 0;text-align:center;">
+                <span style="display:inline-block;background:#ffc107;color:#333;border-radius:8px;padding:6px 18px;font-size:13px;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,0.08);animation:badgePulse 1.5s infinite alternate;position:relative;">
+                    🌟 Special Admin Feature!
+                    <span id="sparkle-effect" style="position:absolute;top:-18px;right:-18px;pointer-events:none;"></span>
+                </span>
+            </div>
+            <ul class="sidebar-nav">
+                <li><a href="#" class="active"><i class="fas fa-users-cog"></i> User Management</a></li>
+                <li><a href="home.html"><i class="fas fa-arrow-left"></i> Back to Dashboard</a></li>
+                <li><a href="#" id="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+            <style>
+                @keyframes badgePulse {
+                    0% { box-shadow: 0 0 8px #ffc107; }
+                    100% { box-shadow: 0 0 24px #ffc107; }
+                }
+                /* Sparkle animation */
+                .sparkle {
+                    position: absolute;
+                    width: 16px;
+                    height: 16px;
+                    pointer-events: none;
+                    animation: sparkleMove 1.2s linear infinite;
+                }
+                @keyframes sparkleMove {
+                    0% { opacity: 0; transform: scale(0.5) translateY(0); }
+                    50% { opacity: 1; transform: scale(1.2) translateY(-10px); }
+                    100% { opacity: 0; transform: scale(0.5) translateY(0); }
+                }
+                /* Pulsing border for Total Users card */
+                .card.pulse-border {
+                    box-shadow: 0 0 0 0 #ffc107;
+                    animation: pulseBorder 1.5s infinite;
+                }
+                @keyframes pulseBorder {
+                    0% { box-shadow: 0 0 0 0 #ffc107; }
+                    50% { box-shadow: 0 0 16px 4px #ffc107; }
+                    100% { box-shadow: 0 0 0 0 #ffc107; }
+                }
+                /* Confetti burst animation */
+                .confetti {
+                    position: fixed;
+                    left: 50%;
+                    top: 20%;
+                    pointer-events: none;
+                    z-index: 9999;
+                }
+                .confetti-piece {
+                    position: absolute;
+                    width: 8px;
+                    height: 16px;
+                    border-radius: 2px;
+                    opacity: 0.8;
+                    animation: confettiFall 1.2s ease-out forwards;
+                }
+                @keyframes confettiFall {
+                    0% { transform: translateY(0) rotate(0deg); }
+                    100% { transform: translateY(120px) rotate(360deg); opacity: 0; }
+                }
+            </style>
+        </aside>
+        <main class="main-content">
+            <header class="main-header">
+                <h1>User Management</h1>
+                <button id="growth-trend-header-btn" title="User Growth Trend" style="margin-left:20px; background:none; border:none; cursor:pointer; font-size:22px; color:#2575fc;"><i class="fas fa-chart-line"></i></button>
+            </header>
+
+            <section class="stats-cards">
+                <div class="card">
+                    <i class="fas fa-users" title="Total number of registered users."></i>
+                    <div class="card-info">
+                        <h3>Total Users <span style="font-size:12px;color:#ffc107;cursor:pointer;" title="This shows all users except admin.">🌟</span></h3>
+                        <p id="total-users">0</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <i class="fas fa-dollar-sign"></i>
+                    <div class="card-info">
+                        <h3>Total Balance</h3>
+                        <p id="total-balance">$0.00</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <i class="fas fa-hand-holding-usd"></i>
+                    <div class="card-info">
+                        <h3>Total Withdrawn</h3>
+                        <p id="total-withdrawn">$0.00</p>
+                    </div>
+                </div>
+            </section>
+
+            <div class="content-box">
+                <h2>All Registered Users</h2>
+                <div class="user-management-controls">
+                    <input type="text" id="search-user" placeholder="Search by email...">
+                    <button id="create-user-btn" class="action-button create-btn"><i class="fas fa-user-plus"></i> Create User</button>
+                    <button id="broadcast-btn" class="action-button broadcast-btn"><i class="fas fa-bullhorn"></i> Broadcast</button>
+                </div>
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Balance</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user-list-tbody">
+                        <!-- User list will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="charts-grid">
+                <div class="content-box">
+                    <h2>User Registrations (Last 30 Days)</h2>
+                    <canvas id="registrations-chart"></canvas>
+                </div>
+                <div class="content-box">
+                    <h2>Balance Distribution</h2>
+                    <canvas id="balance-chart"></canvas>
+                </div>
+                <div class="content-box">
+                    <button id="top-referrers-btn" class="action-button" style="background:#ffc107; color:#333; margin-bottom:15px;"><i class="fas fa-trophy"></i> View Top Referrers</button>
+                    <button id="top-earners-btn" class="action-button" style="background:#28a745; color:#fff; margin-bottom:15px;"><i class="fas fa-money-bill-wave"></i> View Top Earners</button>
+                </div>
+            </div>
+
+    <!-- Special Feature: Top Referrers Modal -->
+    <div id="top-referrers-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="close-top-referrers">&times;</span>
+            <h2>Top 5 Referrers</h2>
+            <ul id="top-referrers-list" style="text-align:left; margin:20px 0; padding:0; list-style:none;"></ul>
+        </div>
+    </div>
+
+    <!-- Special Feature: Top Earners Modal -->
+    <div id="top-earners-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="close-top-earners">&times;</span>
+            <h2>Top 5 Earners</h2>
+            <ul id="top-earners-list" style="text-align:left; margin:20px 0; padding:0; list-style:none;"></ul>
+        </div>
+    </div>
+
+    <!-- Special Feature: User Growth Trend Modal -->
+    <div id="growth-trend-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="close-growth-trend">&times;</span>
+            <h2>User Growth Trend (Last 12 Months)</h2>
+            <canvas id="growth-trend-chart" style="max-width:100%;"></canvas>
+        </div>
+    </div>
+        </main>
+    </div>
+
+    <!-- Notify User Modal -->
+    <div id="notify-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Send Notification</h2>
+            <p>Sending message to: <strong id="notify-user-email"></strong></p>
+            <form id="notify-user-form">
+                <div class="input-group">
+                    <label for="notification-message">Message</label>
+                    <textarea id="notification-message" rows="4" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;" required></textarea>
+                </div>
+                <button type="submit" class="action-button">Send Notification</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Edit User Balance</h2>
+            <p>Editing balance for: <strong id="edit-user-email"></strong></p>
+            <form id="edit-balance-form">
+                <input type="hidden" id="edit-user-original-email">
+                <div class="input-group">
+                    <label for="new-balance">New Balance ($)</label>
+                    <input type="number" id="new-balance" step="0.01" required>
+                </div>
+                <button type="submit" class="action-button">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Broadcast Modal -->
+    <div id="broadcast-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Send Broadcast to All Users</h2>
+            <form id="broadcast-form">
+                <div class="input-group">
+                    <label for="broadcast-message">Broadcast Message</label>
+                    <textarea id="broadcast-message" rows="4" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;" required></textarea>
+                </div>
+                <button type="submit" class="action-button">Send Broadcast</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Create User Modal -->
+    <div id="create-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button create-close">&times;</span>
+            <h2>Create New User</h2>
+            <form id="create-user-form">
+                <div class="input-group">
+                    <label for="create-fullname">Full Name</label>
+                    <input type="text" id="create-fullname" required>
+                </div>
+                <div class="input-group">
+                    <label for="create-email">Email</label>
+                    <input type="email" id="create-email" required>
+                </div>
+                <div class="input-group">
+                    <label for="create-password">Password</label>
+                    <input type="password" id="create-password" required>
+                </div>
+                <button type="submit" class="action-button">Create User</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // --- Special Feature: User Growth Trend Modal Logic ---
+        const growthTrendHeaderBtn = document.getElementById('growth-trend-header-btn');
+        const growthTrendModal = document.getElementById('growth-trend-modal');
+        const closeGrowthTrend = document.getElementById('close-growth-trend');
+        const growthTrendChartEl = document.getElementById('growth-trend-chart');
+
+        if (growthTrendHeaderBtn) {
+            growthTrendHeaderBtn.onclick = function() {
+                // Prepare data for last 12 months
+                let allUsers = getAllUsers().filter(u => u.email !== 'admin@example.com');
+                const now = new Date();
+                const months = [];
+                const counts = [];
+                for (let i = 11; i >= 0; i--) {
+                    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                    const label = d.toLocaleString('default', { month: 'short', year: '2-digit' });
+                    months.push(label);
+                    const monthStart = new Date(d.getFullYear(), d.getMonth(), 1);
+                    const monthEnd = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+                    const count = allUsers.filter(u => {
+                        const reg = new Date(u.registrationDate);
+                        return reg >= monthStart && reg < monthEnd;
+                    }).length;
+                    counts.push(count);
+                }
+                // Show modal
+                growthTrendModal.style.display = 'block';
+                // Render chart
+                setTimeout(() => {
+                    if (growthTrendChartEl) {
+                        new Chart(growthTrendChartEl, {
+                            type: 'line',
+                            data: {
+                                labels: months,
+                                datasets: [{
+                                    label: 'Registrations',
+                                    data: counts,
+                                    borderColor: '#2575fc',
+                                    backgroundColor: 'rgba(37,117,252,0.2)',
+                                    fill: true,
+                                    tension: 0.3
+                                }]
+                            },
+                            options: {
+                                scales: { y: { beginAtZero: true } },
+                                plugins: { legend: { display: false } }
+                            }
+                        });
+                    }
+                }, 200);
+            };
+        }
+        if (closeGrowthTrend) {
+            closeGrowthTrend.onclick = function() {
+                growthTrendModal.style.display = 'none';
+            };
+        }
+        window.addEventListener('click', function(event) {
+            if (event.target == growthTrendModal) {
+                growthTrendModal.style.display = 'none';
+            }
+        });
+        // --- Helper functions for user data ---
+        function getAllUsers() { return JSON.parse(atob(localStorage.getItem('users_encrypted') || btoa('[]'))); }
+        function saveAllUsers(users) { localStorage.setItem('users_encrypted', btoa(JSON.stringify(users))); }
+
+        // --- Page Initialization and User List Rendering ---
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- Add sparkle effect to sidebar badge ---
+            const sparkleContainer = document.getElementById('sparkle-effect');
+            if (sparkleContainer) {
+                for (let i = 0; i < 3; i++) {
+                    const sparkle = document.createElement('span');
+                    sparkle.className = 'sparkle';
+                    sparkle.style.left = `${i * 12}px`;
+                    sparkle.innerHTML = '<svg width="16" height="16"><polygon points="8,0 10,6 16,6 11,10 13,16 8,12 3,16 5,10 0,6 6,6" fill="#fff700"/></svg>';
+                    sparkleContainer.appendChild(sparkle);
+                }
+            }
+            const userListTbody = document.getElementById('user-list-tbody');
+            const modal = document.getElementById('edit-modal');
+            const createModal = document.getElementById('create-modal');
+            const notifyModal = document.getElementById('notify-modal');
+            const broadcastModal = document.getElementById('broadcast-modal');
+            const topReferrersModal = document.getElementById('top-referrers-modal');
+            const topReferrersBtn = document.getElementById('top-referrers-btn');
+            const topReferrersList = document.getElementById('top-referrers-list');
+            const closeTopReferrers = document.getElementById('close-top-referrers');
+
+        const topEarnersModal = document.getElementById('top-earners-modal');
+        const topEarnersBtn = document.getElementById('top-earners-btn');
+        const topEarnersList = document.getElementById('top-earners-list');
+        const closeTopEarners = document.getElementById('close-top-earners');
+            const closeButtons = document.querySelectorAll('.close-button');
+            const editForm = document.getElementById('edit-balance-form');
+            const createForm = document.getElementById('create-user-form');
+            const broadcastForm = document.getElementById('broadcast-form');
+            const createUserBtn = document.getElementById('create-user-btn');
+            const broadcastBtn = document.getElementById('broadcast-btn');
+            const searchInput = document.getElementById('search-user');
+            const allUsers = getAllUsers().filter(u => u.email !== 'admin@example.com'); // Exclude admin
+
+            // --- Update Stat Cards ---
+            document.getElementById('total-users').textContent = allUsers.length;
+            const totalBalance = allUsers.reduce((sum, user) => sum + (user.balance || 0), 0);
+            document.getElementById('total-balance').textContent = `$${totalBalance.toFixed(2)}`;
+            const totalWithdrawn = allUsers.reduce((sum, user) => {
+                const userWithdrawals = (user.transactions || []).reduce((txSum, tx) => txSum + tx.amount, 0);
+                return sum + userWithdrawals;
+            }, 0);
+            document.getElementById('total-withdrawn').textContent = `$${totalWithdrawn.toFixed(2)}`;
+
+            function renderUserList(usersToRender = allUsers) {
+                userListTbody.innerHTML = '';
+                usersToRender.forEach(user => {
+                    const row = document.createElement('tr');
+                    if (user.status === 'banned') {
+                        row.classList.add('banned-user');
+                    }
+                    row.innerHTML = `
+                        <td>${user.fullname}</td>
+                        <td>${user.email}</td>
+                        <td>$${(user.balance || 0).toFixed(2)}</td>
+                        <td>${user.status === 'banned' ? 'Banned' : 'Active'}</td>
+                        <td>
+                            <button class="action-btn edit-btn" data-email="${user.email}"><i class="fas fa-edit"></i></button>
+                            <button class="action-btn notify-btn" data-email="${user.email}"><i class="fas fa-bell"></i></button>
+                            <button class="action-btn ${user.status === 'banned' ? 'unban-btn' : 'ban-btn'}" data-email="${user.email}"><i class="fas fa-gavel"></i></button>
+                            <button class="action-btn delete-btn" data-email="${user.email}"><i class="fas fa-trash-alt"></i></button>
+                        </td>
+                    `;
+                    userListTbody.appendChild(row);
+                });
+                // Add pulsing border to Total Users card
+                const statCards = document.querySelectorAll('.stats-cards .card');
+                if (statCards.length > 0) {
+                    statCards[0].classList.add('pulse-border');
+                }
+            }
+
+            // --- Search Logic ---
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const filteredUsers = allUsers.filter(user => user.email.toLowerCase().includes(searchTerm));
+                renderUserList(filteredUsers);
+            });
+
+            // --- Event Listeners for Edit and Delete ---
+            userListTbody.addEventListener('click', function(event) {
+                const target = event.target.closest('button');
+                if (!target) return;
+
+                const userEmail = target.getAttribute('data-email');
+
+                if (target.classList.contains('edit-btn')) {
+                    const userToEdit = allUsers.find(u => u.email === userEmail);
+                    if (userToEdit) {
+                        document.getElementById('edit-user-email').textContent = userToEdit.email;
+                        document.getElementById('edit-user-original-email').value = userToEdit.email;
+                        document.getElementById('new-balance').value = (userToEdit.balance || 0).toFixed(2);
+                        modal.style.display = 'block';
+                    }
+                }
+
+                if (target.classList.contains('notify-btn')) {
+                    const userToNotify = allUsers.find(u => u.email === userEmail);
+                    if (userToNotify) {
+                        document.getElementById('notify-user-email').textContent = userToNotify.email;
+                        notifyModal.style.display = 'block';
+                    }
+                }
+
+                if (target.classList.contains('ban-btn') || target.classList.contains('unban-btn')) {
+                    const isBanning = target.classList.contains('ban-btn');
+                    const actionText = isBanning ? 'ban' : 'unban';
+                    if (confirm(`Are you sure you want to ${actionText} the user ${userEmail}?`)) {
+                        let allUsers = getAllUsers();
+                        const userIndex = allUsers.findIndex(u => u.email === userEmail);
+                        if (userIndex !== -1) {
+                            allUsers[userIndex].status = isBanning ? 'banned' : 'active';
+                            allUsers[userIndex].activityLog.push({ date: new Date().toLocaleString(), action: `Account ${actionText}ned by admin.` });
+                            saveAllUsers(allUsers);
+                            location.reload(); // Easiest way to refresh all data and styles
+                        }
+                    }
+                }
+
+                if (target.classList.contains('delete-btn')) {
+                    if (confirm(`Are you sure you want to delete the account for ${userEmail}? This action cannot be undone.`)) {
+                        const updatedUsers = getAllUsers().filter(u => u.email !== userEmail);
+                        saveAllUsers(updatedUsers);
+                        location.reload();
+                    }
+                }
+            });
+
+            // --- Modal Logic ---
+            closeButtons.forEach(btn => {
+                btn.onclick = function() {
+                    modal.style.display = 'none';
+                    createModal.style.display = 'none';
+                    notifyModal.style.display = 'none';
+                    broadcastModal.style.display = 'none';
+                }
+            });
+            window.onclick = function(event) {
+                if (event.target == modal || event.target == createModal || event.target == notifyModal || event.target == broadcastModal) {
+                    modal.style.display = 'none';
+                    createModal.style.display = 'none';
+                    notifyModal.style.display = 'none';
+                    broadcastModal.style.display = 'none';
+                }
+            }
+            createUserBtn.onclick = function() {
+                createModal.style.display = 'block';
+            }
+            broadcastBtn.onclick = function() {
+                broadcastModal.style.display = 'block';
+            }
+            editForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const userEmail = document.getElementById('edit-user-original-email').value;
+                const newBalance = parseFloat(document.getElementById('new-balance').value);
+
+                let allUsers = getAllUsers();
+                const userIndex = allUsers.findIndex(u => u.email === userEmail);
+
+                if (userIndex !== -1) {
+                    allUsers[userIndex].balance = newBalance;
+                    allUsers[userIndex].activityLog.push({ date: new Date().toLocaleString(), action: `Balance updated to $${newBalance.toFixed(2)} by admin.` });
+                    saveAllUsers(allUsers);
+                    modal.style.display = 'none';
+                    renderUserList();
+                    alert('User balance updated successfully.');
+                } else {
+                    alert('Error: User not found.');
+                }
+            });
+
+            document.getElementById('notify-user-form').addEventListener('submit', function(event) {
+                event.preventDefault();
+                const userEmail = document.getElementById('notify-user-email').textContent;
+                const message = document.getElementById('notification-message').value;
+
+                let allUsers = getAllUsers();
+                const userIndex = allUsers.findIndex(u => u.email === userEmail);
+
+                if (userIndex !== -1) {
+                    if (!allUsers[userIndex].notifications) {
+                        allUsers[userIndex].notifications = [];
+                    }
+                    allUsers[userIndex].notifications.push({ message, read: false });
+                    saveAllUsers(allUsers);
+                    alert(`Notification sent to ${userEmail}.`);
+                    notifyModal.style.display = 'none';
+                    this.reset();
+                }
+            });
+
+            broadcastForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const message = document.getElementById('broadcast-message').value;
+                if (confirm(`Are you sure you want to send this message to all ${allUsers.length} users?`)) {
+                    let allUsersData = getAllUsers();
+                    allUsersData.forEach(user => {
+                        if (user.email !== 'admin@example.com') {
+                            if (!user.notifications) user.notifications = [];
+                            user.notifications.push({ message: `Broadcast: ${message}`, read: false });
+                        }
+                    });
+                    saveAllUsers(allUsersData);
+                    alert('Broadcast message sent successfully to all users.');
+                    broadcastModal.style.display = 'none';
+                    this.reset();
+                }
+            });
+
+            createForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const fullname = document.getElementById('create-fullname').value;
+                const email = document.getElementById('create-email').value;
+                const password = document.getElementById('create-password').value;
+
+                let allUsers = getAllUsers();
+                const userExists = allUsers.find(u => u.email === email);
+
+                if (userExists) {
+                    alert('A user with this email already exists.');
+                    return;
+                }
+
+                const newUser = {
+                    fullname,
+                    email,
+                    password,
+                    balance: 0,
+                    videosWatchedCount: 0,
+                    watchedVideos: {},
+                    activityLog: [{ date: new Date().toLocaleString(), action: 'Account created by admin.' }],
+                    referredUsers: [],
+                    transactions: [],
+                    registrationDate: new Date().toISOString(),
+                    notifications: [],
+                    status: 'active',
+                    lastBonusClaimedTimestamp: null,
+                    level: 1, // Initialize for leveling system
+                    xp: 0 // Initialize for leveling system
+                };
+                allUsers.push(newUser);
+                saveAllUsers(allUsers);
+                // Confetti burst animation
+                function showConfetti() {
+                    const confettiContainer = document.createElement('div');
+                    confettiContainer.className = 'confetti';
+                    for (let i = 0; i < 24; i++) {
+                        const piece = document.createElement('div');
+                        piece.className = 'confetti-piece';
+                        piece.style.left = `${Math.random()*200-100}px`;
+                        piece.style.background = `hsl(${Math.random()*360},90%,60%)`;
+                        piece.style.animationDelay = `${Math.random()*0.6}s`;
+                        confettiContainer.appendChild(piece);
+                    }
+                    document.body.appendChild(confettiContainer);
+                    setTimeout(() => { confettiContainer.remove(); }, 1400);
+                }
+                showConfetti();
+                alert('New user created successfully!');
+                location.reload();
+            });
+
+            // --- Logout Logic ---
+            document.getElementById('logout-link').addEventListener('click', function(event) {
+                event.preventDefault();
+                sessionStorage.removeItem('loggedInUser');
+                localStorage.removeItem('rememberedUser');
+                window.location.href = 'login.html';
+            });
+
+            // --- Chart.js Analytics ---
+            function renderCharts() {
+                const isDarkMode = document.body.classList.contains('dark-mode');
+                const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+                const fontColor = isDarkMode ? '#e0e0e0' : '#666';
+                Chart.defaults.color = fontColor;
+
+                // Registrations Chart (Line)
+                const registrationCtx = document.getElementById('registrations-chart').getContext('2d');
+                const registrationCounts = {};
+                const thirtyDaysAgo = new Date();
+                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+                allUsers.forEach(user => {
+                    const regDate = new Date(user.registrationDate);
+                    if (regDate >= thirtyDaysAgo) {
+                        const dateString = regDate.toISOString().split('T')[0];
+                        registrationCounts[dateString] = (registrationCounts[dateString] || 0) + 1;
+                    }
+                });
+
+                const registrationLabels = Object.keys(registrationCounts).sort();
+                const registrationData = registrationLabels.map(label => registrationCounts[label]);
+
+                new Chart(registrationCtx, {
+                    type: 'line',
+                    data: {
+                        labels: registrationLabels,
+                        datasets: [{
+                            label: 'New Users',
+                            data: registrationData,
+                            borderColor: 'rgba(37, 117, 252, 1)',
+                            backgroundColor: 'rgba(37, 117, 252, 0.2)',
+                            fill: true,
+                            tension: 0.3
+                        }]
+                    },
+                    options: { scales: { y: { beginAtZero: true, grid: { color: gridColor } }, x: { grid: { color: gridColor } } } }
+                });
+
+                // Balance Distribution Chart (Doughnut)
+                const balanceCtx = document.getElementById('balance-chart').getContext('2d');
+                const balanceTiers = { '$0': 0, '$1-$50': 0, '$50+': 0 };
+                allUsers.forEach(user => {
+                    const balance = user.balance || 0;
+                    if (balance === 0) balanceTiers['$0']++;
+                    else if (balance > 0 && balance <= 50) balanceTiers['$1-$50']++;
+                    else balanceTiers['$50+']++;
+                });
+
+                new Chart(balanceCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(balanceTiers),
+                        datasets: [{
+                            data: Object.values(balanceTiers),
+                            backgroundColor: ['#dc3545', '#ffc107', '#28a745'],
+                        }]
+                    }
+                });
+            }
+
+            // Initial render
+            renderUserList();
+            renderCharts();
+
+            // --- Top Referrers Feature ---
+            topReferrersBtn.addEventListener('click', function() {
+                topReferrersList.innerHTML = '';
+                let allUsers = getAllUsers().filter(u => u.email !== 'admin@example.com');
+                allUsers.sort((a, b) => (b.referredUsers ? b.referredUsers.length : 0) - (a.referredUsers ? a.referredUsers.length : 0));
+                allUsers.slice(0, 5).forEach((u, idx) => {
+                    const li = document.createElement('li');
+                    li.style.padding = '8px 0';
+                    li.innerHTML = `<strong>#${idx+1} ${u.fullname || u.email}</strong> - <span style='color:#28a745;'>${(u.referredUsers ? u.referredUsers.length : 0)} referrals</span>`;
+                    topReferrersList.appendChild(li);
+                });
+                if (topReferrersList.innerHTML === '') {
+                    topReferrersList.innerHTML = '<li>No referral data yet.</li>';
+                }
+                topReferrersModal.style.display = 'block';
+            });
+
+            // --- Top Earners Feature ---
+            topEarnersBtn.addEventListener('click', function() {
+                topEarnersList.innerHTML = '';
+                let allUsers = getAllUsers().filter(u => u.email !== 'admin@example.com');
+                allUsers.sort((a, b) => (b.balance || 0) - (a.balance || 0));
+                allUsers.slice(0, 5).forEach((u, idx) => {
+                    const li = document.createElement('li');
+                    li.style.padding = '8px 0';
+                    li.innerHTML = `<strong>#${idx+1} ${u.fullname || u.email}</strong> - <span style='color:#00796b;'>$${(u.balance || 0).toFixed(2)}</span>`;
+                    topEarnersList.appendChild(li);
+                });
+                if (topEarnersList.innerHTML === '') {
+                    topEarnersList.innerHTML = '<li>No earnings data yet.</li>';
+                }
+                topEarnersModal.style.display = 'block';
+            });
+
+            closeTopEarners.onclick = function() {
+                topEarnersModal.style.display = 'none';
+            };
+
+            window.addEventListener('click', function(event) {
+                if (event.target == topEarnersModal) {
+                    topEarnersModal.style.display = 'none';
+                }
+            });
+
+            closeTopReferrers.onclick = function() {
+                topReferrersModal.style.display = 'none';
+            };
+
+            window.addEventListener('click', function(event) {
+                if (event.target == topReferrersModal) {
+                    topReferrersModal.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
