@@ -29,16 +29,6 @@
             z-index: 1000;
         }
         .toast {
-            background-color: #fff;
-            color: #333;
-            padding: 15px 20px;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            margin-bottom: 10px;
-            opacity: 0;
-            transition: opacity 0.3s, transform 0.3s;
-            transform: translateX(100%);
-            border-left: 5px solid #6a11cb; /* Default info color */
         }
         .toast.show {
             opacity: 1;
@@ -55,6 +45,14 @@
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
             width: 100%;
             max-width: 400px;
+            box-sizing: border-box;
+            text-align: center;
+            background-color: #ffffff;
+            padding: 48px 70px;
+            border-radius: 16px;
+            box-shadow: 0 14px 32px rgba(106,17,203,0.13);
+            width: 100%;
+            max-width: 540px;
             box-sizing: border-box;
             text-align: center;
         }
@@ -188,6 +186,7 @@
             <!-- --- End Special Feature --- -->
 
             <form action="#" method="POST">
+                <div id="form-notification" style="display:none;margin-bottom:18px;padding:14px 18px;border-radius:8px;font-size:15px;font-weight:500;text-align:center;"></div>
                 <div class="input-group">
                     <label for="fullname">Full Name</label>
                     <input type="text" id="fullname" name="fullname" placeholder="Enter your full name" required>
@@ -214,6 +213,92 @@
                     <div class="password-wrapper">
                         <input type="password" id="confirm-password" name="confirm-password" placeholder="Confirm your password" required>
                         <i class="fas fa-eye-slash" id="toggleConfirmPassword"></i>
+                    </div>
+                </div>
+                <!-- Beautiful Info Box for Personal Details -->
+                <div class="input-group">
+                    <div style="background:linear-gradient(135deg,#e3e6ff 0%,#f0f2f5 100%);border-radius:10px;box-shadow:0 2px 10px rgba(106,17,203,0.10);padding:16px 18px;display:flex;align-items:center;gap:16px;margin-bottom:8px;">
+                        <i class="fas fa-venus-mars" style="font-size:28px;color:#6a11cb;"></i>
+                        <div style="flex:1;">
+                            <label for="gender" style="font-size:15px;font-weight:600;color:#2575fc;">Gender</label>
+                            <select id="gender" name="gender" required style="width:100%;margin-top:8px;padding:10px 12px;border-radius:6px;border:1px solid #ddd;font-size:15px;">
+                                <option value="">Select gender</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="birthdate">Birth Date</label>
+                    <input type="date" id="birthdate" name="birthdate" required>
+                </div>
+                <div class="input-group">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <div style="flex:1;">
+                            <label for="phone">Phone Number</label>
+                            <input type="tel" id="phone" name="phone" placeholder="Enter your phone number" required style="width:100%;">
+                        </div>
+                        <div style="flex-shrink:0;min-width:140px;">
+                            <label for="country" style="font-size:13px;color:#2575fc;font-weight:500;">Country</label>
+                            <select id="country" name="country" required style="width:100%;padding:7px 8px;border-radius:6px;border:1px solid #ddd;font-size:13px;margin-top:4px;">
+                                <option value="">Select Country</option>
+                                <option value="Algeria">Algeria - Algiers</option>
+                                <option value="Argentina">Argentina - Buenos Aires</option>
+                                <option value="Australia">Australia - Canberra</option>
+                                <option value="Austria">Austria - Vienna</option>
+                                <option value="Belgium">Belgium - Brussels</option>
+                                <option value="Brazil">Brazil - Brasília</option>
+                                <option value="Canada">Canada - Ottawa</option>
+                                <option value="Chile">Chile - Santiago</option>
+                                <option value="China">China - Beijing</option>
+                                <option value="Colombia">Colombia - Bogotá</option>
+                                <option value="Denmark">Denmark - Copenhagen</option>
+                                <option value="Egypt">Egypt - Cairo</option>
+                                <option value="Finland">Finland - Helsinki</option>
+                                <option value="France">France - Paris</option>
+                                <option value="Germany">Germany - Berlin</option>
+                                <option value="Greece">Greece - Athens</option>
+                                <option value="Hungary">Hungary - Budapest</option>
+                                <option value="India">India - New Delhi</option>
+                                <option value="Indonesia">Indonesia - Jakarta</option>
+                                <option value="Iran">Iran - Tehran</option>
+                                <option value="Iraq">Iraq - Baghdad</option>
+                                <option value="Ireland">Ireland - Dublin</option>
+                                <option value="Israel">Israel - Jerusalem</option>
+                                <option value="Italy">Italy - Rome</option>
+                                <option value="Japan">Japan - Tokyo</option>
+                                <option value="Jordan">Jordan - Amman</option>
+                                <option value="Kenya">Kenya - Nairobi</option>
+                                <option value="Malaysia">Malaysia - Kuala Lumpur</option>
+                                <option value="Mexico">Mexico - Mexico City</option>
+                                <option value="Morocco">Morocco - Rabat</option>
+                                <option value="Netherlands">Netherlands - Amsterdam</option>
+                                <option value="New Zealand">New Zealand - Wellington</option>
+                                <option value="Nigeria">Nigeria - Abuja</option>
+                                <option value="Norway">Norway - Oslo</option>
+                                <option value="Pakistan">Pakistan - Islamabad</option>
+                                <option value="Peru">Peru - Lima</option>
+                                <option value="Philippines">Philippines - Manila</option>
+                                <option value="Poland">Poland - Warsaw</option>
+                                <option value="Portugal">Portugal - Lisbon</option>
+                                <option value="Qatar">Qatar - Doha</option>
+                                <option value="Romania">Romania - Bucharest</option>
+                                <option value="Russia">Russia - Moscow</option>
+                                <option value="Saudi Arabia">Saudi Arabia - Riyadh</option>
+                                <option value="Singapore">Singapore - Singapore</option>
+                                <option value="South Africa">South Africa - Pretoria</option>
+                                <option value="South Korea">South Korea - Seoul</option>
+                                <option value="Spain">Spain - Madrid</option>
+                                <option value="Sweden">Sweden - Stockholm</option>
+                                <option value="Switzerland">Switzerland - Bern</option>
+                                <option value="Turkey">Turkey - Ankara</option>
+                                <option value="United Arab Emirates">United Arab Emirates - Abu Dhabi</option>
+                                <option value="United Kingdom">United Kingdom - London</option>
+                                <option value="United States">United States - Washington, D.C.</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
                 <div class="terms">
@@ -256,36 +341,47 @@
         const urlParams = new URLSearchParams(window.location.search);
         const refCode = urlParams.get('ref');
 
-        document.querySelector('.register-form form').addEventListener('submit', function(event) {
+        const form = document.querySelector('.register-form form');
+        form.addEventListener('submit', function(event) {
             event.preventDefault();
-
+            const notificationBox = document.getElementById('form-notification');
+            function showFormNotification(message, type) {
+                notificationBox.textContent = message;
+                notificationBox.style.display = 'block';
+                if (type === 'error') {
+                    notificationBox.style.background = 'linear-gradient(90deg,#ffebee 0%,#ffcdd2 100%)';
+                    notificationBox.style.color = '#c62828';
+                    notificationBox.style.border = '1px solid #c62828';
+                } else if (type === 'success') {
+                    notificationBox.style.background = 'linear-gradient(90deg,#e8f5e9 0%,#c8e6c9 100%)';
+                    notificationBox.style.color = '#388e3c';
+                    notificationBox.style.border = '1px solid #388e3c';
+                } else {
+                    notificationBox.style.background = '#f0f2f5';
+                    notificationBox.style.color = '#333';
+                    notificationBox.style.border = 'none';
+                }
+            }
+            notificationBox.style.display = 'none';
             const fullname = document.getElementById('fullname').value;
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirm-password').value;
             const termsAccepted = document.getElementById('terms').checked;
-
             if (!termsAccepted) {
-                showNotification("You must agree to the Terms of Service to register.", "error");
+                showFormNotification("You must agree to the Terms of Service to register.", "error");
                 return;
             }
-
             if (password !== confirmPassword) {
-                showNotification("Passwords do not match!", "error");
+                showFormNotification("Passwords do not match!", "error");
                 return;
             }
-
-            // Get existing users from localStorage, or initialize an empty array
             const users = JSON.parse(atob(localStorage.getItem('users_encrypted') || btoa('[]')));
-
-            // Check if user already exists
             const userExists = users.find(user => user.email === email);
             if (userExists) {
-                showNotification("An account with this email already exists.", "error");
+                showFormNotification("An account with this email already exists.", "error");
                 return;
             }
-
-            // Add new user
             users.push({ 
                 fullname, 
                 email, 
@@ -302,11 +398,8 @@
                 level: 1, // Initialize for leveling system
                 xp: 0 // Initialize for leveling system
             });
-
-            // Save updated users array to localStorage
             localStorage.setItem('users_encrypted', btoa(JSON.stringify(users)));
-
-            showNotification("Registration successful! Redirecting to login...", "success");
+            showFormNotification("Registration successful! Redirecting to login...", "success");
             setTimeout(() => {
                 window.location.href = 'login.html';
             }, 2000);
